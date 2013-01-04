@@ -73,18 +73,78 @@
     # Get a step by its indice
     getStep: (i) ->
       $.extend({
+        #
+        # {String} Path to the page on which the step should be shown. this allows you
+        # to build tours that span several pages!
+        #
         path: ""
+
+        #
+        # {jQuery | Css Selector | Function} HTML element on which the step popover
+        # should be shown.
+        #
+        element:null
+
+        #
+        # {String} How to position the popover - top | bottom | left | right.
+        #
         placement: "right"
+
+        #
+        # {String} Step title
+        #
         title: ""
+
+        #
+        # {String} Step content
+        #
         content: ""
+
+        #
+        # {Number} Index of the step to show after this one, starting from 0 for the
+        # first step of the tour. -1 to not show the link to next step.
+        # By default, the next step (in the order you added them) will be shown.
+        #
         next: if i == @_steps.length - 1 then -1 else i + 1
+
+        #
+        # {Number} Index of the step to show before this one, starting from 0 for
+        # the first step of the tour. -1 to not show the link to previous step.
+        # By default, the previous step (in the order you added them) will be shown.
+        #
         prev: i - 1
-        addClass:""
+
+        #
+        # {Boolean} Apply a css fade transition to the tooltip.
+        #
         animation: true
+
+        #
+        # {Boolean} Enable the reflex mode, click on the element to continue the tour
+        #
         reflex: false
+
+        #
+        # {String} Css class to add to the .popover element for this step only
+        #
+        addClass:""
+
+        #
+        # {Function} Function to execute right before each step is shown.
+        # If onShow returns a promise (see $.Deferred() documentation), Bootstrap-tour will wait until
+        # completition of the promise before displaying the popover
+        #
         onShow: $.noop
-        onHide: $.noop
+
+        #
+        # {Function} Function to execute right after each step is shown.
+        #
         onShown: $.noop
+
+        #
+        # {Function} Function to execute right before each step is hidden.
+        #
+        onHide: $.noop
       }, @_steps[i]) if @_steps[i]?
 
     # Start tour from current step
@@ -169,6 +229,12 @@
 
       $el.popover("hide")
 
+    # Wrap if necessary the return call by a deferred
+    _deferred: (d) ->
+      return d if d and d.done
+      # If the function did not returned a promise, return a resolved promise
+      return $.Deferred().resolve().promise()
+
     # Show the specified step
     showStep: (i) ->
       step = @getStep(i)
@@ -184,20 +250,24 @@
         document.location.href = step.path
         return
 
+      e = @_initEvent()
 
-      step.onShow(@, @_initEvent()) if step.onShow?
-      @_options.onShow(@, @_initEvent()) if @_options.onShow isnt step.onShow
+      defs = []
+      defs.push(@_deferred(step.onShow(@, e))) if step.onShow?
+      defs.push(@_deferred(@_options.onShow(@, e))) if @_options.onShow isnt step.onShow
 
-      # If step element is hidden, skip step
-      unless step.element? && $el.length != 0 && $el.is(":visible")
-        @showNextStep()
-        return
+      $.when.apply($, defs).always(() =>
+        # If step element is hidden, skip step
+        unless step.element? && $el.length != 0 && $el.is(":visible")
+          @showNextStep()
+          return
 
-      # Show popover
-      @_showPopover(step, i)
+        # Show popover
+        @_showPopover(step, i)
 
-      step.onShown(@, @_initEvent()) if step.onShown?
-      @_options.onShown(@, @_initEvent()) if @_options.onShown isnt step.onShown
+        step.onShown(@, e) if step.onShown?
+        @_options.onShown(@, e) if @_options.onShown isnt step.onShown
+      )
 
     # Setup current step variable
     setCurrentStep: (value) ->
@@ -223,7 +293,6 @@
 
     # Show step popover
     _showPopover: (step, i) ->
-      content = "#{step.content}"
       $el     = @getElement(step.element)
 
       options = $.extend {}, @_options
@@ -236,14 +305,14 @@
           .css("cursor", "pointer")
           .on "click.tour", (e) => @next(trigger:'reflex')
 
-      $nav = $(options.template(step:step)).wrapAll('<div/>').parent()
+      $nav = $(options.(step)).wrapAll('<div/>').parent()
 
-      if step.prev == 0 or options.hidePrev
+      if step.prev == 0
         $nav.find('.prev').remove()
       if step.next == 0
         $nav.find('.next').remove()
 
-      content += $nav.html()
+      content = $nav.html()
       $nav.remove();
 
       $el.popover({
@@ -303,7 +372,7 @@
 
     Tour.defaults =
       #
-      # {String} The tour name
+      # {String} This option is used to build the name of the cookie where the tour state is stored. You can initialize several tours with different names in the same page and application.
       #
       name: 'tour'
 
@@ -318,11 +387,6 @@
       keyboard: true
 
       #
-      # {Boolean} True if the previous button should always be hidden
-      #
-      hidePrev: false
-
-      #
       # {String} Css class to add to the .popover element
       #
       addClass:""
@@ -330,29 +394,34 @@
       #
       # {Function} Navigation template, `.prev`, `.next` and `.end`
       # will be removed at runtime if necessary
-      # @param {Object} Input object that contains a `step` attribute as the current step
-      template:(o) ->
+      #
+      # The template can be an underscore template or $.tmpl ...
+      #
+      template:(step) ->
         '''
+          <p>#{step.content}</p>"
           <hr/>
           <p>
-            <a href="#{o.step.prev}" class="prev">Previous</a>
-            <a href="#{o.step.prev}" class="next">Next</a>
+            <a href="#{step.prev}" class="prev">Previous</a>
+            <a href="#{step.next}" class="next">Next</a>
             <a href="#" class="pull-right end">End tour</a>
           </p>
         '''
 
       #
-      # {Function} Called before showing a popover
+      # {Function} Function to execute right before each step is shown.
+      # If onShow returns a promise (see $.Deferred() documentation), Bootstrap-tour will wait until
+      # completition of the promise before displaying the popover
       #
       onShow: (tour, event) ->
 
       #
-      # {Function} Called after a popover is shown
+      # {Function} Function to execute right after each step is shown.
       #
       onShown: (tour, event) ->
 
       #
-      # {Function Called when a popover is hidden
+      # {Function} Function to execute right before each step is hidden.
       #
       onHide: (tour, event) ->
 
