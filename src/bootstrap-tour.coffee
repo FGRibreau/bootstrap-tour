@@ -192,10 +192,10 @@
         @setState("current_step", value)
       else
         @_current = @getState("current_step")
-        if (@_current == null || @_current == "null")
+        if not @_current
           @_current = 0
         else
-          @_current = parseInt(@_current)
+          @_current = parseInt(@_current, 10)
 
     # Show next step
     showNextStep: ->
