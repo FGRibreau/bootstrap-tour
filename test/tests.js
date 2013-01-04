@@ -58,6 +58,27 @@ test("Tour.setState should save state localstorage", function() {
   return strictEqual(window.localStorage.getItem("tour_test"), "yes", "tour saves state");
 });
 
+test("Tour.getState should get state cookie with an null value if not found", function() {
+  this.tour = new Tour({
+    persistence: "Cookie"
+  });
+  return strictEqual(this.tour.getState("_heyhey_"), null, "null value if not found");
+});
+
+test("Tour.getState should get state localstorage with an null value if not found", function() {
+  this.tour = new Tour({
+    persistence: "LocalStorage"
+  });
+  return strictEqual(this.tour.getState("_heyhey_"), null, "null value if not found");
+});
+
+test("Tour.getState should get state memory with an null value if not found", function() {
+  this.tour = new Tour({
+    persistence: "Memory"
+  });
+  return strictEqual(this.tour.getState("_heyhey_"), null, "null value if not found");
+});
+
 test("Tour.getState should get state localstorage", function() {
   this.tour = new Tour({
     persistence: "LocalStorage"

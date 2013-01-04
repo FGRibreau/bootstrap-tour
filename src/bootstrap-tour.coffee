@@ -16,23 +16,28 @@
 
   class Memory extends Backend
     constructor: (options) ->
-      window["__db_#{options.name}__"] = {}
+      @ns = "__db_#{options.name}__"
+      window[@ns] = {}
     setState: (options, key, value) ->
-      window["__db_#{options.name}__"][key] = value
+      window[@ns][key] = value
     getState: (options, key) ->
-      window["__db_#{options.name}__"][key]
+      window[@ns][key] or null
 
   class Cookie extends Backend
+    constructor:(options) ->
+      @ns = "#{options.name}_"
     setState: (options, key, value) ->
-      $.cookie("#{options.name}_#{key}", value, { expires: 36500, path: '/' })
+      $.cookie("#{@ns}#{key}", value, { expires: 36500, path: '/' })
     getState: (options, key) ->
-      $.cookie("#{options.name}_#{key}")
+      $.cookie("#{@ns}#{key}")
 
   class LocalStorage extends Backend
+    constructor:(options) ->
+      @ns = "#{options.name}_"
     setState: (options, key, value) ->
-      window.localStorage.setItem("#{options.name}_#{key}", value)
+      window.localStorage.setItem("#{@ns}#{key}", value)
     getState: (options, key) ->
-      window.localStorage.getItem("#{options.name}_#{key}")
+      window.localStorage.getItem("#{@ns}#{key}")
 
   backend =
     Memory: Memory

@@ -45,6 +45,18 @@ test "Tour.setState should save state localstorage", ->
   @tour.setState("test", "yes")
   strictEqual(window.localStorage.getItem("tour_test"), "yes", "tour saves state")
 
+test "Tour.getState should get state cookie with an null value if not found", ->
+  @tour = new Tour(persistence:"Cookie")
+  strictEqual(@tour.getState("_heyhey_"), null, "null value if not found")
+
+test "Tour.getState should get state localstorage with an null value if not found", ->
+  @tour = new Tour(persistence:"LocalStorage")
+  strictEqual(@tour.getState("_heyhey_"), null, "null value if not found")
+
+test "Tour.getState should get state memory with an null value if not found", ->
+  @tour = new Tour(persistence:"Memory")
+  strictEqual(@tour.getState("_heyhey_"), null, "null value if not found")
+
 test "Tour.getState should get state localstorage", ->
   @tour = new Tour(persistence:"LocalStorage")
   @tour.setState("test", "yes")
