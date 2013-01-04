@@ -79,6 +79,7 @@
         content: ""
         next: if i == @_steps.length - 1 then -1 else i + 1
         prev: i - 1
+        addClass:""
         animation: true
         reflex: false
         onShow: @_options.onShow
@@ -120,7 +121,6 @@
 
     # Hide current step and show prev step
     prev:(e)->
-      e = @_initEvent(e)
       @hideStep(@_current, @_initEvent(e))
       @showPrevStep()
 
@@ -147,13 +147,10 @@
     getElement: (el) ->
       if typeof el is 'function'
         el = el()
-
       if !el
         return $()
-
       if el instanceof jQuery
         return el
-
       return $(el)
 
     # Hide the specified step
@@ -164,9 +161,7 @@
       step.onHide(@, e) if step.onHide?
 
       if step.reflex
-        $el
-          .css("cursor", "auto")
-          .off("click.tour")
+        $el.css("cursor", "auto").off("click.tour")
 
       $el.popover("hide")
 
@@ -253,7 +248,9 @@
         animation: step.animation
       }).popover("show")
 
+
       tip = $el.data("popover").tip()
+      tip.addClass("#{options.name}-step#{i} #{options.addClass} #{step.addClass}")
       @_reposition(tip)
       @_scrollIntoView(tip)
 
@@ -308,6 +305,7 @@
       #
       persistence: 'Cookie'
       keyboard: true
+      addClass:""
       afterSetState: (key, value) ->
       afterGetState: (key, value) ->
       onShow: (tour) ->

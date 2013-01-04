@@ -130,6 +130,18 @@ test("Tour.addStep should support a function as `element`", function() {
   return this.tour.start();
 });
 
+test("Tour.addStep should support the addClass attribute", function() {
+  var _class;
+  this.tour = new Tour();
+  _class = 'testclass';
+  this.tour.addStep({
+    element: 'body',
+    addClass: _class
+  });
+  this.tour.start();
+  return ok($('.popover').hasClass(_class), ".popover should now have the css class " + _class);
+});
+
 test("Tour.getElement(step) handle string as well as function and return a jQuery wrapper", function() {
   var $el;
   this.tour = new Tour();
@@ -298,6 +310,7 @@ test("Tour.getStep should get a step", function() {
     placement: "left",
     title: "Test",
     content: "Just a test",
+    addClass: "",
     prev: -1,
     reflex: false,
     next: 2,

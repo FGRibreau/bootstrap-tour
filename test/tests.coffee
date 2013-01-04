@@ -90,6 +90,24 @@ test "Tour.addStep should support a function as `element`", ->
   deepEqual(@tour._steps, [step], "tour adds steps")
   @tour.start()
 
+test "Tour.addStep should support the addClass attribute", ->
+  @tour = new Tour()
+  _class = 'testclass'
+  @tour.addStep({
+    element: 'body'
+    addClass: _class
+  })
+
+  @tour.start()
+
+  ok($('.popover').hasClass(_class), ".popover should now have the css class #{_class}")
+
+test "._showPopover should automatically add a css class", ->
+  @tour = new Tour(name:"ok")
+  @tour.addStep({element: 'body')
+  @tour.start()
+  ok($('.popover').hasClass("ok-step0"), "css class added")
+
 test "Tour.getElement(step) handle string as well as function and return a jQuery wrapper", ->
   @tour = new Tour()
 
@@ -224,6 +242,7 @@ test "Tour.getStep should get a step", ->
     placement: "left"
     title: "Test"
     content: "Just a test"
+    addClass: ""
     prev: -1
     reflex:false
     next: 2

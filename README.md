@@ -10,6 +10,8 @@ New features
 - [Improvement] Persistence option `Memory`, `Cookie`, `LocalStorage` via constructor `new Tour({persistence:"LocalStorage"})`
 - [Improvement] `onHide` callback now has a second argument `Event` with a `trigger` attribute equal to `api`, `popover` or `reflex`
 - [Improvement] `addStep` now accept a function as `element`
+- [Improvement] `addStep` and `Tour` constructor now accept `addClass` string attribute, the specified css class will then be added to the popover element
+- [Improvement] the popover element now have an automatically added `{tour.name}-step{step.index}` css class
 - [Bug fix] Don't create unnecessary $() objects
 - [Bug fix] Remove event handlers after each step when `reflex:true`
 
