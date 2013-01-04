@@ -39,13 +39,17 @@ test("Tour should accept an array of steps and set the current step", function()
 });
 
 test("Tour.setState should save state cookie", function() {
-  this.tour = new Tour();
+  this.tour = new Tour({
+    persistence: "Cookie"
+  });
   this.tour.setState("test", "yes");
   return strictEqual($.cookie("tour_test"), "yes", "tour saves state");
 });
 
 test("Tour.getState should get state cookie", function() {
-  this.tour = new Tour();
+  this.tour = new Tour({
+    persistence: "Cookie"
+  });
   this.tour.setState("test", "yes");
   strictEqual(this.tour.getState("test"), "yes", "tour gets state");
   return $.cookie("tour_test", null);
@@ -56,7 +60,7 @@ test("Tour.setState should save state localstorage", function() {
     persistence: "LocalStorage"
   });
   this.tour.setState("test", "yes");
-  return strictEqual(window.localStorage.getItem("tour_test"), "yes", "tour saves state");
+  return strictEqual(window.localStorage.getItem("tour_test"), "\"yes\"", "tour saves state");
 });
 
 test("Tour.getState should get state cookie with an null value if not found", function() {
@@ -230,6 +234,51 @@ test("Tour with onShow option should run the callback before showing the step", 
   strictEqual(tour_test, 2, "tour runs onShow when first step shown");
   this.tour.next();
   return strictEqual(tour_test, 4, "tour runs onShow when next step shown");
+});
+
+test("Tour with onShow option should wait on the promise callback", function() {
+  var resolved;
+  this.tour = new Tour();
+  resolved = false;
+  this.tour.addStep({
+    element: function() {
+      QUnit.start();
+      if (!resolved) {
+        ok(false, "element should be called only after onShow has completed");
+      }
+      return ok(true);
+    },
+    onShow: function(tour, event) {
+      var def;
+      def = $.Deferred();
+      setTimeout(function() {
+        resolved = true;
+        return def.resolve();
+      }, 100);
+      return def.promise();
+    }
+  });
+  QUnit.stop();
+  return this.tour.start();
+});
+
+test("onShow(..., event) should not contain element attr, but onShown(..., event) should", function() {
+  var $div;
+  expect(2);
+  this.tour = new Tour();
+  $div = $("<div></div>").appendTo("#qunit-fixture");
+  this.tour.addStep({
+    element: function() {
+      return $div;
+    },
+    onShow: function(tour, event) {
+      return strictEqual(event.element, void 0, "element should not be specified");
+    },
+    onShown: function(tour, event) {
+      return ok(event.element.is($div));
+    }
+  });
+  return this.tour.start();
 });
 
 test("Tour with onShown option should run the callback after showing the step", function() {
