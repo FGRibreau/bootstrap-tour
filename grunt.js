@@ -81,5 +81,6 @@ module.exports = function(grunt) {
 
   // Default task.
   grunt.registerTask('default', 'lint qunit concat min');
+  grunt.registerTask('test', 'coffee:lib coffee:test lint qunit');
 
 };

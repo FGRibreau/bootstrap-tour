@@ -1,8 +1,14 @@
-# Bootstrap Tour
+# Bootstrap Tour [![Build Status](https://travis-ci.org/FGRibreau/bootstrap-tour.png?branch=master)](https://travis-ci.org/FGRibreau/bootstrap-tour)
 
 Quick and easy product tours with Twitter Bootstrap Popovers.
 
 Fork of the original [sorich87 bootstrap-tour](http://sorich87.github.com/bootstrap-tour/).
+
+New features
+------------
+
+- Persistence option `None`, `Cookie`, `LocalStorage` via constructor `new Tour({persistence:"LocalStorage"})`
+
 
 ## Getting Started
 Download the [production version][min] or the [development version][max].
