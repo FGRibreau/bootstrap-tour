@@ -176,17 +176,17 @@ addClass:""
 # If onShow returns a promise (see $.Deferred() documentation), Bootstrap-tour will wait until
 # completition of the promise before displaying the popover
 #
-onShow: $.noop
+onShow: (tour, event) ->
 
 #
 # {Function} Function to execute right after each step is shown.
 #
-onShown: $.noop
+onShown: (tour, event) ->
 
 #
 # {Function} Function to execute right before each step is hidden.
 #
-onHide: $.noop
+onHide: (tour, event) ->
 ```
 
 ## NPM
