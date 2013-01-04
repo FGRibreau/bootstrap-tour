@@ -93,35 +93,40 @@
       # Go to next step after click on element with class .next
       $(document).off("click.bootstrap-tour",".popover .next").on "click.bootstrap-tour", ".popover .next", (e) =>
         e.preventDefault()
-        @next()
+        @next(trigger:'popover')
 
       # Go to previous step after click on element with class .prev
       $(document).off("click.bootstrap-tour",".popover .prev").on "click.bootstrap-tour", ".popover .prev", (e) =>
         e.preventDefault()
-        @prev()
+        @prev(trigger:'popover')
 
       # End tour after click on element with class .end
       $(document).off("click.bootstrap-tour",".popover .end").on "click.bootstrap-tour", ".popover .end", (e) =>
         e.preventDefault()
-        @end()
+        @end(trigger:'popover')
 
       @_setupKeyboardNavigation()
 
       @showStep(@_current)
 
+    _initEvent: (e = {}) ->
+      e.trigger = "api" if !e.trigger
+      e
+
     # Hide current step and show next step
-    next: ->
-      @hideStep(@_current)
+    next:(e) ->
+      @hideStep(@_current, @_initEvent(e))
       @showNextStep()
 
     # Hide current step and show prev step
-    prev: ->
-      @hideStep(@_current)
+    prev:(e)->
+      e = @_initEvent(e)
+      @hideStep(@_current, @_initEvent(e))
       @showPrevStep()
 
     # End tour
-    end: ->
-      @hideStep(@_current)
+    end:(e) ->
+      @hideStep(@_current, @_initEvent(e))
       $(document).off ".bootstrap-tour"
       @setState("end", "yes")
 
@@ -137,9 +142,11 @@
       @start()
 
     # Hide the specified step
-    hideStep: (i) ->
+    hideStep: (i, e) ->
+      e = @_initEvent() if !e
+
       step = @getStep(i)
-      step.onHide(@) if step.onHide?
+      step.onHide(@, e) if step.onHide?
 
       if step.reflex
         $(step.element)
@@ -208,7 +215,7 @@
       if step.reflex
         $(step.element)
           .css("cursor", "pointer")
-          .on "click.tour", (e) => @next()
+          .on "click.tour", (e) => @next(trigger:'reflex')
 
       nav = []
 
@@ -287,7 +294,7 @@
       afterSetState: (key, value) ->
       afterGetState: (key, value) ->
       onShow: (tour) ->
-      onHide: (tour) ->
+      onHide: (tour, event) ->
       onShown: (tour) ->
 
   window.Tour = Tour

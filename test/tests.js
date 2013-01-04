@@ -118,16 +118,20 @@ test("Tour.addStep should add a step", function() {
 
 test("Reflex event handlers should be cleaned after a step (via click)", function() {
   var step;
-  expect(1);
-  this.tour = new Tour();
+  expect(2);
+  this.tour = new Tour({
+    onHide: function(tour, e) {
+      return equal(e.trigger, "reflex", "the next() call was triggered by the reflex feature");
+    }
+  });
   $("<a id='ok'>hey</a>").appendTo("#qunit-fixture");
   step = {
     element: '#ok',
     reflex: true
   };
   this.tour.addStep(step);
-  this.tour.next = function() {
-    this.hideStep(this._current);
+  this.tour.next = function(e) {
+    this.hideStep(this._current, e);
     return equal(true, true, "should only be called on time");
   };
   this.tour.start();
@@ -193,9 +197,11 @@ test("Tour with onShown option should run the callback after showing the step", 
 
 test("Tour with onHide option should run the callback before hiding the step", function() {
   var tour_test;
+  expect(4);
   tour_test = 0;
   this.tour = new Tour({
-    onHide: function() {
+    onHide: function(tour, e) {
+      equal(e.trigger, "api");
       return tour_test += 2;
     }
   });

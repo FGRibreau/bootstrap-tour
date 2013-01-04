@@ -82,16 +82,21 @@ test "Tour.addStep should add a step", ->
   deepEqual(@tour._steps, [step], "tour adds steps")
 
 test "Reflex event handlers should be cleaned after a step (via click)", ->
-  expect(1)
-  @tour = new Tour()
+  expect(2)
+
+  @tour = new Tour({
+    onHide: (tour, e) ->
+      equal(e.trigger, "reflex", "the next() call was triggered by the reflex feature")
+  })
+
   $("<a id='ok'>hey</a>").appendTo("#qunit-fixture");
   step =
     element: '#ok'
-    reflex:true
+    reflex: true
   @tour.addStep(step)
 
-  @tour.next = () ->
-    @hideStep(@_current)
+  @tour.next = (e) ->
+    @hideStep(@_current, e)
     equal(true, true, "should only be called on time")
 
   @tour.start()
@@ -114,6 +119,7 @@ test "Reflex event handlers should be cleaned after a step (via API)", ->
   @tour.start()
   @tour.next()
   $("#ok").trigger('click')
+
 
 test "Tour with onShow option should run the callback before showing the step", ->
   tour_test = 0
@@ -140,9 +146,12 @@ test "Tour with onShown option should run the callback after showing the step", 
   strictEqual(tour_test, 2, "tour runs onShown after first step shown")
 
 test "Tour with onHide option should run the callback before hiding the step", ->
+  expect(4)
+
   tour_test = 0
   @tour = new Tour({
-    onHide: ->
+    onHide: (tour, e) ->
+      equal(e.trigger, "api")
       tour_test += 2
   })
   @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})

@@ -7,7 +7,8 @@ Fork of the original [sorich87 bootstrap-tour](http://sorich87.github.com/bootst
 New features
 ------------
 
-- Persistence option `Memory`, `Cookie`, `LocalStorage` via constructor `new Tour({persistence:"LocalStorage"})`
+- [Improvement] Persistence option `Memory`, `Cookie`, `LocalStorage` via constructor `new Tour({persistence:"LocalStorage"})`
+- [Improvement] `onHide` callback now has a second argument `Event` with a `trigger` attribute equal to `api`, `popover` or `reflex`
 - [Bug fix] Remove event handlers after each step when `reflex:true`
 
 ## Getting Started
