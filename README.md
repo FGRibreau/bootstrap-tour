@@ -12,6 +12,7 @@ New features
 - [Improvement] `addStep` now accept a function as `element`
 - [Improvement] `addStep` and `Tour` constructor now accept `addClass` string attribute, the specified css class will then be added to the popover element
 - [Improvement] the popover element now have an automatically added `{tour.name}-step{step.index}` css class
+- [Improvement] `Tour` constructor now accept a `hidePrev` flag, if set to true, the `prev` button will always be hidden.
 - [Bug fix] Don't create unnecessary $() objects
 - [Bug fix] Remove event handlers after each step when `reflex:true`
 

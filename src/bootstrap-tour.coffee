@@ -231,7 +231,7 @@
 
       nav = []
 
-      if step.prev >= 0
+      if step.prev >= 0 and !options.hidePrev
         nav.push "<a href='##{step.prev}' class='prev'>#{options.labels.prev}</a>"
       if step.next >= 0
         nav.push "<a href='##{step.next}' class='next'>#{options.labels.next}</a>"

@@ -104,9 +104,10 @@ test "Tour.addStep should support the addClass attribute", ->
 
 test "._showPopover should automatically add a css class", ->
   @tour = new Tour(name:"ok")
-  @tour.addStep({element: 'body')
+  @tour.addStep(element: 'body')
   @tour.start()
   ok($('.popover').hasClass("ok-step0"), "css class added")
+
 
 test "Tour.getElement(step) handle string as well as function and return a jQuery wrapper", ->
   @tour = new Tour()
@@ -274,6 +275,15 @@ test "Tour.start(true) should force starting a tour that ended", ->
   @tour.setState("end", "yes")
   @tour.start(true)
   strictEqual($(".popover").length, 1, "previously ended tour starts again if forced to")
+
+test "Tour `hidePrev should always add prev", ->
+  @tour = new Tour(hidePrev:true)
+  @tour.addStep(element: $("<div></div>").appendTo("#qunit-fixture"), title:"ok", content:"ok")
+  @tour.addStep(element: $("<div></div>").appendTo("#qunit-fixture"), title:"ok", content:"ok")
+  @tour.start()
+  @tour.next()
+  equal($('.popover .prev').length, 0, ".prev should be hidden");
+
 
 test "Tour.next should hide current step and show next step", ->
   @tour = new Tour()
