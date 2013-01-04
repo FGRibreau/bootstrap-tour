@@ -246,11 +246,11 @@
         content: content
         html: true
         animation: step.animation
-      }).popover("show")
+      });
 
-
-      tip = $el.data("popover").tip()
-      tip.addClass("#{options.name}-step#{i} #{options.addClass} #{step.addClass}")
+      popover = $el.data("popover")
+      tip     = popover.tip().addClass("#{options.name}-step#{i} #{options.addClass} #{step.addClass}")
+      popover.show()
       @_reposition(tip)
       @_scrollIntoView(tip)
 
