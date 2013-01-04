@@ -80,6 +80,7 @@
         next: if i == @_steps.length - 1 then -1 else i + 1
         prev: i - 1
         animation: true
+        reflex: false
         onShow: @_options.onShow
         onHide: @_options.onHide
         onShown: @_options.onShown
