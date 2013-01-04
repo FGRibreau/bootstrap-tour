@@ -31,12 +31,12 @@ test "Tour should accept an array of steps and set the current step", ->
   strictEqual(@tour._current, 0, "tour initializes current step")
 
 test "Tour.setState should save state cookie", ->
-  @tour = new Tour()
+  @tour = new Tour(persistence:"Cookie")
   @tour.setState("test", "yes")
   strictEqual($.cookie("tour_test"), "yes", "tour saves state")
 
 test "Tour.getState should get state cookie", ->
-  @tour = new Tour()
+  @tour = new Tour(persistence:"Cookie")
   @tour.setState("test", "yes")
   strictEqual(@tour.getState("test"), "yes", "tour gets state")
   $.cookie("tour_test", null)
@@ -44,7 +44,7 @@ test "Tour.getState should get state cookie", ->
 test "Tour.setState should save state localstorage", ->
   @tour = new Tour(persistence:"LocalStorage")
   @tour.setState("test", "yes")
-  strictEqual(window.localStorage.getItem("tour_test"), "yes", "tour saves state")
+  strictEqual(window.localStorage.getItem("tour_test"), "\"yes\"", "tour saves state")
 
 test "Tour.getState should get state cookie with an null value if not found", ->
   @tour = new Tour(persistence:"Cookie")
@@ -178,6 +178,41 @@ test "Tour with onShow option should run the callback before showing the step", 
   strictEqual(tour_test, 2, "tour runs onShow when first step shown")
   @tour.next()
   strictEqual(tour_test, 4, "tour runs onShow when next step shown")
+
+test "Tour with onShow option should wait on the promise callback", ->
+  @tour = new Tour()
+  resolved = false
+  @tour.addStep({
+    element: () ->
+      QUnit.start()
+      if !resolved
+        ok(false, "element should be called only after onShow has completed")
+      ok(true)
+
+    onShow:(tour, event) ->
+      def = $.Deferred()
+      setTimeout(() ->
+        resolved = true
+        def.resolve()
+      , 100)
+      def.promise()
+  })
+
+  QUnit.stop()
+  @tour.start()
+
+test "onShow(..., event) should not contain element attr, but onShown(..., event) should", ->
+  expect(2)
+  @tour = new Tour()
+  $div = $("<div></div>").appendTo("#qunit-fixture")
+  @tour.addStep({
+    element: () -> $div
+    onShow:(tour, event) ->
+      strictEqual(event.element, undefined, "element should not be specified")
+    onShown:(tour, event) ->
+      ok(event.element.is($div))
+  })
+  @tour.start()
 
 test "Tour with onShown option should run the callback after showing the step", ->
   tour_test = 0

@@ -35,9 +35,13 @@
     constructor:(options) ->
       @ns = "#{options.name}_"
     setState: (options, key, value) ->
-      window.localStorage.setItem("#{@ns}#{key}", value)
+      window.localStorage.setItem("#{@ns}#{key}", JSON.stringify(value))
     getState: (options, key) ->
-      window.localStorage.getItem("#{@ns}#{key}")
+      try
+        return JSON.parse(window.localStorage.getItem("#{@ns}#{key}"))
+      catch err
+        console.error(err)
+        return null
 
   backend =
     Memory: Memory
@@ -170,10 +174,16 @@
 
       @showStep(@_current)
 
+    # Event object:
+    # `{String}` `trigger`:: `api | popover | reflex`
+    # `{jQuery}` `element`: the current step element
+    #     Note that `onShow` Event does not provides the `element` attribute use `onShown` instead)
     _initEvent: (e = {}) ->
       e.trigger = "api" if !e.trigger
       step = @getStep(@_current)
-      if step and !e.element
+      if e.element is false
+        delete e.element
+      else if step
         e.element = @getElement(step.element)
       e
 
@@ -241,7 +251,6 @@
 
       return unless step
 
-      $el = @getElement(step.element)
       @setCurrentStep(i)
 
       # Redirect to step path if not already there
@@ -250,13 +259,16 @@
         document.location.href = step.path
         return
 
-      e = @_initEvent()
+      e = @_initEvent(element:false)
 
       defs = []
       defs.push(@_deferred(step.onShow(@, e))) if step.onShow?
       defs.push(@_deferred(@_options.onShow(@, e))) if @_options.onShow isnt step.onShow
 
       $.when.apply($, defs).always(() =>
+        $el = @getElement(step.element)
+        e = @_initEvent(element:$el)
+
         # If step element is hidden, skip step
         unless step.element? && $el.length != 0 && $el.is(":visible")
           @showNextStep()
@@ -276,7 +288,7 @@
         @setState("current_step", value)
       else
         @_current = @getState("current_step")
-        if not @_current
+        if not @_current or @_current is "null"
           @_current = 0
         else
           @_current = parseInt(@_current, 10)
@@ -305,7 +317,7 @@
           .css("cursor", "pointer")
           .on "click.tour", (e) => @next(trigger:'reflex')
 
-      $nav = $(options.(step)).wrapAll('<div/>').parent()
+      $nav = $(options.template(step)).wrapAll('<div/>').parent()
 
       if step.prev == 0
         $nav.find('.prev').remove()
@@ -374,12 +386,12 @@
       #
       # {String} This option is used to build the name of the cookie where the tour state is stored. You can initialize several tours with different names in the same page and application.
       #
-      name: 'tour'
+      name: "tour"
 
       #
-      # {String} "Cookie" | "LocalStorage" | "Memory" (default "Cookie")
-      #
-      persistence: 'Cookie'
+      # {String} "Cookie" | "LocalStorage" | "Memory" (default "Memory")
+      # Note: persistence: "Cookie" requires jquery.cookie.js
+      persistence: "Memory"
 
       #
       # {Boolean} Keyboard navigation
