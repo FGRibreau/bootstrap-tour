@@ -40,6 +40,17 @@ test "Tour.getState should get state cookie", ->
   strictEqual(@tour.getState("test"), "yes", "tour gets state")
   $.cookie("tour_test", null)
 
+test "Tour.setState should save state localstorage", ->
+  @tour = new Tour(persistence:"LocalStorage")
+  @tour.setState("test", "yes")
+  strictEqual(window.localStorage.getItem("tour_test"), "yes", "tour saves state")
+
+test "Tour.getState should get state localstorage", ->
+  @tour = new Tour(persistence:"LocalStorage")
+  @tour.setState("test", "yes")
+  strictEqual(@tour.getState("test"), "yes", "tour saves state")
+  window.localStorage.setItem("tour_test", null)
+
 test "Tour.addStep should add a step", ->
   @tour = new Tour()
   step = { element: $("<div></div>").appendTo("#qunit-fixture") }

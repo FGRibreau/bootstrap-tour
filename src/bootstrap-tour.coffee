@@ -21,10 +21,16 @@
     getState: (options, key) ->
       $.cookie("#{options.name}_#{key}")
 
+  class LocalStorage extends Backend
+    setState: (options, key, value) ->
+      window.localStorage.setItem("#{options.name}_#{key}", value)
+    getState: (options, key) ->
+      window.localStorage.getItem("#{options.name}_#{key}")
 
   backend =
-    none: None
-    cookie: Cookie
+    None: None
+    Cookie: Cookie
+    LocalStorage: LocalStorage
 
   class Tour
     constructor: (options) ->
@@ -36,9 +42,9 @@
           prev: '&laquo; Prev'
         }
         #
-        # {String} "cookie" | "none" (default "cookie")
+        # {String} "Cookie" | "LocalStorage" | "None" (default "Cookie")
         #
-        persistence: 'cookie'
+        persistence: 'Cookie'
         keyboard: true
         afterSetState: (key, value) ->
         afterGetState: (key, value) ->
