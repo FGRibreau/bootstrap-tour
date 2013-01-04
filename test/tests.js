@@ -67,6 +67,23 @@ test("Tour.getState should get state localstorage", function() {
   return window.localStorage.setItem("tour_test", null);
 });
 
+test("Tour.setState should save state Memory", function() {
+  this.tour = new Tour({
+    persistence: "Memory"
+  });
+  this.tour.setState("test", "yes");
+  return strictEqual(window["__db_tour__"]['test'], "yes", "tour saves state");
+});
+
+test("Tour.getState should get state Memory", function() {
+  this.tour = new Tour({
+    persistence: "Memory"
+  });
+  this.tour.setState("test", "yes");
+  strictEqual(this.tour.getState("test"), "yes", "tour saves state");
+  return window["__db_tour__"]['test'] = null;
+});
+
 test("Tour.addStep should add a step", function() {
   var step;
   this.tour = new Tour();

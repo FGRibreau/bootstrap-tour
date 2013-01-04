@@ -14,7 +14,14 @@
     setState: (options, key, value) ->
     getState: (options, key) ->
 
-  class None extends Backend
+  class Memory extends Backend
+    constructor: (options) ->
+      window["__db_#{options.name}__"] = {}
+    setState: (options, key, value) ->
+      window["__db_#{options.name}__"][key] = value
+    getState: (options, key) ->
+      window["__db_#{options.name}__"][key]
+
   class Cookie extends Backend
     setState: (options, key, value) ->
       $.cookie("#{options.name}_#{key}", value, { expires: 36500, path: '/' })
@@ -28,7 +35,7 @@
       window.localStorage.getItem("#{options.name}_#{key}")
 
   backend =
-    None: None
+    Memory: Memory
     Cookie: Cookie
     LocalStorage: LocalStorage
 
@@ -42,7 +49,7 @@
           prev: '&laquo; Prev'
         }
         #
-        # {String} "Cookie" | "LocalStorage" | "None" (default "Cookie")
+        # {String} "Cookie" | "LocalStorage" | "Memory" (default "Cookie")
         #
         persistence: 'Cookie'
         keyboard: true
@@ -54,7 +61,7 @@
       }, options)
 
       # Setup persistence
-      @persistence = new backend[if @_options.persistence of backend then  @_options.persistence else "none"]();
+      @persistence = new backend[if @_options.persistence of backend then  @_options.persistence else "Memory"](@_options);
 
       @_steps = []
       @setCurrentStep()

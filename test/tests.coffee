@@ -51,6 +51,17 @@ test "Tour.getState should get state localstorage", ->
   strictEqual(@tour.getState("test"), "yes", "tour saves state")
   window.localStorage.setItem("tour_test", null)
 
+test "Tour.setState should save state Memory", ->
+  @tour = new Tour(persistence:"Memory")
+  @tour.setState("test", "yes")
+  strictEqual(window["__db_tour__"]['test'], "yes", "tour saves state")
+
+test "Tour.getState should get state Memory", ->
+  @tour = new Tour(persistence:"Memory")
+  @tour.setState("test", "yes")
+  strictEqual(@tour.getState("test"), "yes", "tour saves state")
+  window["__db_tour__"]['test'] = null;
+
 test "Tour.addStep should add a step", ->
   @tour = new Tour()
   step = { element: $("<div></div>").appendTo("#qunit-fixture") }
