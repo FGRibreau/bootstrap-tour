@@ -141,19 +141,34 @@
       @setCurrentStep(0)
       @start()
 
+    #
+    # @param  {Mixed} element
+    # @return {jQuery}      a jQuery object
+    getElement: (el) ->
+      if typeof el is 'function'
+        el = el()
+
+      if !el
+        return $()
+
+      if el instanceof jQuery
+        return el
+
+      return $(el)
+
     # Hide the specified step
     hideStep: (i, e) ->
       e = @_initEvent() if !e
-
       step = @getStep(i)
+      $el = @getElement(step.element)
       step.onHide(@, e) if step.onHide?
 
       if step.reflex
-        $(step.element)
+        $el
           .css("cursor", "auto")
           .off("click.tour")
 
-      $(step.element).popover("hide")
+      $el.popover("hide")
 
     # Show the specified step
     showStep: (i) ->
@@ -161,6 +176,7 @@
 
       return unless step
 
+      $el = @getElement(step.element)
       @setCurrentStep(i)
 
       # Redirect to step path if not already there
@@ -172,7 +188,7 @@
       step.onShow(@) if step.onShow?
 
       # If step element is hidden, skip step
-      unless step.element? && $(step.element).length != 0 && $(step.element).is(":visible")
+      unless step.element? && $el.length != 0 && $el.is(":visible")
         @showNextStep()
         return
 
@@ -206,6 +222,7 @@
     # Show step popover
     _showPopover: (step, i) ->
       content = "#{step.content}<br /><p>"
+      $el     = @getElement(step.element)
 
       options = $.extend {}, @_options
 
@@ -213,7 +230,7 @@
         $.extend options, step.options
 
       if step.reflex
-        $(step.element)
+        $el
           .css("cursor", "pointer")
           .on "click.tour", (e) => @next(trigger:'reflex')
 
@@ -227,7 +244,7 @@
 
       content += "<a href='#' class='pull-right end'>#{options.labels.end}</a>"
 
-      $(step.element).popover({
+      $el.popover({
         placement: step.placement
         trigger: "manual"
         title: step.title
@@ -236,7 +253,7 @@
         animation: step.animation
       }).popover("show")
 
-      tip = $(step.element).data("popover").tip()
+      tip = $el.data("popover").tip()
       @_reposition(tip)
       @_scrollIntoView(tip)
 

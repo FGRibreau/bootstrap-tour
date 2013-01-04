@@ -81,6 +81,32 @@ test "Tour.addStep should add a step", ->
   @tour.addStep(step)
   deepEqual(@tour._steps, [step], "tour adds steps")
 
+test "Tour.addStep should support a function as `element`", ->
+  @tour = new Tour()
+  $("<div id='ok'></div>").appendTo("#qunit-fixture")
+
+  step = { element: ()-> $('#ok'); }
+  @tour.addStep(step)
+  deepEqual(@tour._steps, [step], "tour adds steps")
+  @tour.start()
+
+test "Tour.getElement(step) handle string as well as function and return a jQuery wrapper", ->
+  @tour = new Tour()
+
+  $el = @tour.getElement(() -> $('body'))
+  ok($el.is('body'))
+
+  $el = @tour.getElement(() -> 'body')
+  ok($el.is('body'))
+
+  $el = @tour.getElement('body')
+  ok($el.is('body'))
+
+  $el = @tour.getElement('notfound')
+  ok($el.length is 0)
+  equal($el.is(':visible'), false)
+
+
 test "Reflex event handlers should be cleaned after a step (via click)", ->
   expect(2)
 

@@ -116,6 +116,38 @@ test("Tour.addStep should add a step", function() {
   return deepEqual(this.tour._steps, [step], "tour adds steps");
 });
 
+test("Tour.addStep should support a function as `element`", function() {
+  var step;
+  this.tour = new Tour();
+  $("<div id='ok'></div>").appendTo("#qunit-fixture");
+  step = {
+    element: function() {
+      return $('#ok');
+    }
+  };
+  this.tour.addStep(step);
+  deepEqual(this.tour._steps, [step], "tour adds steps");
+  return this.tour.start();
+});
+
+test("Tour.getElement(step) handle string as well as function and return a jQuery wrapper", function() {
+  var $el;
+  this.tour = new Tour();
+  $el = this.tour.getElement(function() {
+    return $('body');
+  });
+  ok($el.is('body'));
+  $el = this.tour.getElement(function() {
+    return 'body';
+  });
+  ok($el.is('body'));
+  $el = this.tour.getElement('body');
+  ok($el.is('body'));
+  $el = this.tour.getElement('notfound');
+  ok($el.length === 0);
+  return equal($el.is(':visible'), false);
+});
+
 test("Reflex event handlers should be cleaned after a step (via click)", function() {
   var step;
   expect(2);
