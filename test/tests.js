@@ -3,11 +3,12 @@ module("bootstrap-tour", {
   teardown: function() {
     this.tour.setState("current_step", null);
     this.tour.setState("end", null);
-    return $.each(this.tour._steps, function(i, s) {
+    $.each(this.tour._steps, function(i, s) {
       if ((s.element != null) && (s.element.popover != null)) {
         return s.element.popover("hide").removeData("popover");
       }
     });
+    return $('.popover').remove();
   }
 });
 
@@ -113,6 +114,24 @@ test("Tour.addStep should add a step", function() {
   };
   this.tour.addStep(step);
   return deepEqual(this.tour._steps, [step], "tour adds steps");
+});
+
+test("Reflex event handlers should be cleaned after a step", function() {
+  var step;
+  expect(1);
+  this.tour = new Tour();
+  $("<a id='ok'>hey</a>").appendTo("#qunit-fixture");
+  step = {
+    element: '#ok',
+    reflex: true
+  };
+  this.tour.addStep(step);
+  this.tour.next = function() {
+    this.hideStep(this._current);
+    return equal(true, true, "should only be called on time");
+  };
+  this.tour.start();
+  return $("#ok").trigger('click').trigger('click');
 });
 
 test("Tour with onShow option should run the callback before showing the step", function() {
@@ -223,6 +242,7 @@ test("Tour.getStep should get a step", function() {
     title: "Test",
     content: "Just a test",
     prev: -1,
+    reflex: false,
     next: 2,
     end: false,
     animation: false,

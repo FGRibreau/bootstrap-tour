@@ -141,6 +141,12 @@
       step = @getStep(i)
       step.onHide(@) if step.onHide?
 
+      if step.reflex
+        $(step.element)
+          .css("cursor", "auto")
+          .off("click.tour")
+
+
       $(step.element).popover("hide")
 
     # Show the specified step
@@ -199,11 +205,11 @@
 
       if step.options
         $.extend options, step.options
+
       if step.reflex
-        $(step.element).css "cursor", "pointer"
-        $(step.element).on "click", (e) =>
-          $(step.element).css "cursor", "auto"
-          @next()
+        $(step.element)
+          .css("cursor", "pointer")
+          .on "click.tour", (e) => @next()
 
       nav = []
 

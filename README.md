@@ -8,7 +8,7 @@ New features
 ------------
 
 - Persistence option `Memory`, `Cookie`, `LocalStorage` via constructor `new Tour({persistence:"LocalStorage"})`
-
+- [Bug fix] Remove event handlers after each step when `reflex:true`
 
 ## Getting Started
 Download the [production version][min] or the [development version][max].

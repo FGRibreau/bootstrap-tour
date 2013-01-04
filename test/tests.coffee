@@ -6,6 +6,7 @@ module("bootstrap-tour",
       if s.element? && s.element.popover?
         s.element.popover("hide").removeData("popover")
     )
+    $('.popover').remove();
 )
 
 test "Tour should set the tour options", ->
@@ -79,6 +80,22 @@ test "Tour.addStep should add a step", ->
   step = { element: $("<div></div>").appendTo("#qunit-fixture") }
   @tour.addStep(step)
   deepEqual(@tour._steps, [step], "tour adds steps")
+
+test "Reflex event handlers should be cleaned after a step", ->
+  expect(1)
+  @tour = new Tour()
+  $("<a id='ok'>hey</a>").appendTo("#qunit-fixture");
+  step =
+    element: '#ok'
+    reflex:true
+  @tour.addStep(step)
+
+  @tour.next = () ->
+    @hideStep(@_current)
+    equal(true, true, "should only be called on time")
+
+  @tour.start()
+  $("#ok").trigger('click').trigger('click')
 
 test "Tour with onShow option should run the callback before showing the step", ->
   tour_test = 0
@@ -155,6 +172,7 @@ test "Tour.getStep should get a step", ->
     title: "Test"
     content: "Just a test"
     prev: -1
+    reflex:false
     next: 2
     end: false
     animation: false
