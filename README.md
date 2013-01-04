@@ -7,7 +7,7 @@ Fork of the original [sorich87 bootstrap-tour](http://sorich87.github.com/bootst
 New features
 ------------
 
-- Persistence option `None`, `Cookie`, `LocalStorage` via constructor `new Tour({persistence:"LocalStorage"})`
+- Persistence option `Memory`, `Cookie`, `LocalStorage` via constructor `new Tour({persistence:"LocalStorage"})`
 
 
 ## Getting Started
