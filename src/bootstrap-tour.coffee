@@ -146,7 +146,6 @@
           .css("cursor", "auto")
           .off("click.tour")
 
-
       $(step.element).popover("hide")
 
     # Show the specified step

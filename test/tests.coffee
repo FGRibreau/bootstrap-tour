@@ -81,7 +81,7 @@ test "Tour.addStep should add a step", ->
   @tour.addStep(step)
   deepEqual(@tour._steps, [step], "tour adds steps")
 
-test "Reflex event handlers should be cleaned after a step", ->
+test "Reflex event handlers should be cleaned after a step (via click)", ->
   expect(1)
   @tour = new Tour()
   $("<a id='ok'>hey</a>").appendTo("#qunit-fixture");
@@ -96,6 +96,24 @@ test "Reflex event handlers should be cleaned after a step", ->
 
   @tour.start()
   $("#ok").trigger('click').trigger('click')
+
+test "Reflex event handlers should be cleaned after a step (via API)", ->
+  expect(1)
+
+  @tour = new Tour()
+  $("<a id='ok'>hey</a>").appendTo("#qunit-fixture");
+  step =
+    element: '#ok'
+    reflex:true
+  @tour.addStep(step)
+
+  @tour.next = () ->
+    @hideStep(@_current)
+    equal(true, true, "should be called one time")
+
+  @tour.start()
+  @tour.next()
+  $("#ok").trigger('click')
 
 test "Tour with onShow option should run the callback before showing the step", ->
   tour_test = 0
