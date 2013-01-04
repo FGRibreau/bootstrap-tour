@@ -6,7 +6,7 @@ Fork of [sorich87 bootstrap-tour](http://sorich87.github.com/bootstrap-tour/).
 
 Extra features
 ------------
-
+- [Improvement] `Tour` constructor now accept a `template` attribute thus the `labels.*` attribute has been removed.
 - [Improvement] Persistence option `Memory`, `Cookie`, `LocalStorage` via constructor `new Tour({persistence:"LocalStorage"})`
 - [Improvement] `onHide` and `onShow` callbacks now have a second argument `Event` with
   - `{String}` `Event.trigger`:: `api | popover | reflex`
@@ -37,7 +37,9 @@ In your web page:
 
 <script type="text/javascript">
 // Initialize the tour
-var tour = new Tour();
+var tour = new Tour({
+  name:"myTour"
+});
 
 //  Add steps
 tour.addStep({
@@ -52,7 +54,69 @@ tour.start();
 ```
 
 ## Documentation
-[Bootstrap-tour documentation](http://sorich87.github.com/bootstrap-tour/)
+For the Tour instance API see [the original documentation](http://sorich87.github.com/bootstrap-tour/)
+
+### Tour Constructor
+The `Tour` constructor accept an option object with the following optional attributes:
+
+```coffeescript
+#
+# {String} The tour name
+#
+name: 'tour'
+
+#
+# {String} "Cookie" | "LocalStorage" | "Memory" (default "Cookie")
+#
+persistence: 'Cookie'
+
+#
+# {Boolean} Keyboard navigation
+#
+keyboard: true
+
+#
+# {Boolean} True if the previous button should always be hidden
+#
+hidePrev: false
+
+#
+# {String} Css class to add to the .popover element
+#
+addClass:""
+
+#
+# {Function} Navigation template, `.prev`, `.next` and `.end`
+# will be removed at runtime if necessary
+# @param {Object} Input object that contains a `step` attribute as the current step
+template:(o) ->
+  '''
+    <hr/>
+    <p>
+      <a href="#{o.step.prev}" class="prev">Previous</a>
+      <a href="#{o.step.prev}" class="next">Next</a>
+      <a href="#" class="pull-right end">End tour</a>
+    </p>
+  '''
+
+#
+# {Function} Called before showing a popover
+#
+onShow: (tour, event) ->
+
+#
+# {Function} Called after a popover is shown
+#
+onShown: (tour, event) ->
+
+#
+# {Function Called when a popover is hidden
+#
+onHide: (tour, event) ->
+
+afterSetState: (key, value) ->
+afterGetState: (key, value) ->
+```
 
 ## Release History
 v0.1.0 - Initial commit

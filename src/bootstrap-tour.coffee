@@ -196,8 +196,8 @@
       # Show popover
       @_showPopover(step, i)
 
-      step.onShown(@) if step.onShown?
-      @_options.onShown(@) if @_options.onShown isnt step.onShown
+      step.onShown(@, @_initEvent()) if step.onShown?
+      @_options.onShown(@, @_initEvent()) if @_options.onShown isnt step.onShown
 
     # Setup current step variable
     setCurrentStep: (value) ->
@@ -223,7 +223,7 @@
 
     # Show step popover
     _showPopover: (step, i) ->
-      content = "#{step.content}<br /><p>"
+      content = "#{step.content}"
       $el     = @getElement(step.element)
 
       options = $.extend {}, @_options
@@ -236,15 +236,15 @@
           .css("cursor", "pointer")
           .on "click.tour", (e) => @next(trigger:'reflex')
 
-      nav = []
+      $nav = $(options.template(step:step)).wrapAll('<div/>').parent()
 
-      if step.prev >= 0 and !options.hidePrev
-        nav.push "<a href='##{step.prev}' class='prev'>#{options.labels.prev}</a>"
-      if step.next >= 0
-        nav.push "<a href='##{step.next}' class='next'>#{options.labels.next}</a>"
-      content += nav.join(" | ")
+      if step.prev == 0 or options.hidePrev
+        $nav.find('.prev').remove()
+      if step.next == 0
+        $nav.find('.next').remove()
 
-      content += "<a href='#' class='pull-right end'>#{options.labels.end}</a>"
+      content += $nav.html()
+      $nav.remove();
 
       $el.popover({
         placement: step.placement
@@ -302,22 +302,62 @@
 
 
     Tour.defaults =
+      #
+      # {String} The tour name
+      #
       name: 'tour'
-      labels:
-        end: 'End tour'
-        next: 'Next &raquo;'
-        prev: '&laquo; Prev'
+
       #
       # {String} "Cookie" | "LocalStorage" | "Memory" (default "Cookie")
       #
       persistence: 'Cookie'
+
+      #
+      # {Boolean} Keyboard navigation
+      #
       keyboard: true
+
+      #
+      # {Boolean} True if the previous button should always be hidden
+      #
+      hidePrev: false
+
+      #
+      # {String} Css class to add to the .popover element
+      #
       addClass:""
+
+      #
+      # {Function} Navigation template, `.prev`, `.next` and `.end`
+      # will be removed at runtime if necessary
+      # @param {Object} Input object that contains a `step` attribute as the current step
+      template:(o) ->
+        '''
+          <hr/>
+          <p>
+            <a href="#{o.step.prev}" class="prev">Previous</a>
+            <a href="#{o.step.prev}" class="next">Next</a>
+            <a href="#" class="pull-right end">End tour</a>
+          </p>
+        '''
+
+      #
+      # {Function} Called before showing a popover
+      #
+      onShow: (tour, event) ->
+
+      #
+      # {Function} Called after a popover is shown
+      #
+      onShown: (tour, event) ->
+
+      #
+      # {Function Called when a popover is hidden
+      #
+      onHide: (tour, event) ->
+
       afterSetState: (key, value) ->
       afterGetState: (key, value) ->
-      onShow: (tour, event) ->
-      onHide: (tour, event) ->
-      onShown: (tour) ->
 
   window.Tour = Tour
 
