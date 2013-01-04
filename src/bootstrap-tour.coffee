@@ -46,24 +46,7 @@
 
   class Tour
     constructor: (options) ->
-      @_options = $.extend({
-        name: 'tour'
-        labels: {
-          end: 'End tour'
-          next: 'Next &raquo;'
-          prev: '&laquo; Prev'
-        }
-        #
-        # {String} "Cookie" | "LocalStorage" | "Memory" (default "Cookie")
-        #
-        persistence: 'Cookie'
-        keyboard: true
-        afterSetState: (key, value) ->
-        afterGetState: (key, value) ->
-        onShow: (tour) ->
-        onHide: (tour) ->
-        onShown: (tour) ->
-      }, options)
+      @_options = $.extend({}, Tour.defaults, options)
 
       # Setup persistence
       @persistence = new backend[if @_options.persistence of backend then  @_options.persistence else "Memory"](@_options);
@@ -282,6 +265,24 @@
               e.preventDefault()
               if @_current > 0
                 @prev()
+
+
+    Tour.defaults =
+      name: 'tour'
+      labels:
+        end: 'End tour'
+        next: 'Next &raquo;'
+        prev: '&laquo; Prev'
+      #
+      # {String} "Cookie" | "LocalStorage" | "Memory" (default "Cookie")
+      #
+      persistence: 'Cookie'
+      keyboard: true
+      afterSetState: (key, value) ->
+      afterGetState: (key, value) ->
+      onShow: (tour) ->
+      onHide: (tour) ->
+      onShown: (tour) ->
 
   window.Tour = Tour
 
