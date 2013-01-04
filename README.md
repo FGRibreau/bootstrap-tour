@@ -1,4 +1,4 @@
-# Bootstrap Tour [![Build Status](https://travis-ci.org/FGRibreau/bootstrap-tour.png?branch=master)](https://travis-ci.org/FGRibreau/bootstrap-tour)
+# Bootstrap Tour [![Build Status](https://travis-ci.org/FGRibreau/bootstrap-tour.png)](https://travis-ci.org/FGRibreau/bootstrap-tour)
 
 Quick and easy product tours with Twitter Bootstrap Popovers.
 
