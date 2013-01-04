@@ -82,9 +82,9 @@
         addClass:""
         animation: true
         reflex: false
-        onShow: @_options.onShow
-        onHide: @_options.onHide
-        onShown: @_options.onShown
+        onShow: $.noop
+        onHide: $.noop
+        onShown: $.noop
       }, @_steps[i]) if @_steps[i]?
 
     # Start tour from current step
@@ -162,6 +162,7 @@
       step = @getStep(i)
       $el = @getElement(step.element)
       step.onHide(@, e) if step.onHide?
+      @_options.onHide(@, e) if @_options.onHide isnt step.onHide
 
       if step.reflex
         $el.css("cursor", "auto").off("click.tour")
@@ -183,7 +184,9 @@
         document.location.href = step.path
         return
 
+
       step.onShow(@, @_initEvent()) if step.onShow?
+      @_options.onShow(@, @_initEvent()) if @_options.onShow isnt step.onShow
 
       # If step element is hidden, skip step
       unless step.element? && $el.length != 0 && $el.is(":visible")
@@ -194,6 +197,7 @@
       @_showPopover(step, i)
 
       step.onShown(@) if step.onShown?
+      @_options.onShown(@) if @_options.onShown isnt step.onShown
 
     # Setup current step variable
     setCurrentStep: (value) ->

@@ -210,6 +210,25 @@ test "Tour with onHide option should run the callback before hiding the step", -
   @tour.hideStep(1)
   strictEqual(tour_test, 4, "tour runs onHide when next step hidden")
 
+test "Tour with onHide/onShow option should not be overriden by the step onHide/onShow level option", ->
+  expect(6);
+
+  @tour = new Tour({
+    onHide: (tour, e) -> ok(true, "onHide tour level called")
+    onShow: (tour, e) -> ok(true, "onShow tour level called")
+    onShown: (tour, e) -> ok(true, "onShown tour level called")
+  })
+
+  @tour.addStep(
+    element: $("<div></div>").appendTo("#qunit-fixture")
+    onHide: (tour, e) -> ok(true, "onHide step level called")
+    onShow: (tour, e) -> ok(true, "onShow step level called")
+    onShown: (tour, e) -> ok(true, "onShown step level called")
+  )
+
+  @tour.start()
+  @tour.next()
+
 test "Tour.addStep with onShow option should run the callback before showing the step", ->
   tour_test = 0
   @tour = new Tour()

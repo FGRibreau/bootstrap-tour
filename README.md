@@ -2,9 +2,9 @@
 
 Quick and easy product tours with Twitter Bootstrap Popovers.
 
-Fork of the original [sorich87 bootstrap-tour](http://sorich87.github.com/bootstrap-tour/).
+Fork of [sorich87 bootstrap-tour](http://sorich87.github.com/bootstrap-tour/).
 
-New features
+Extra features
 ------------
 
 - [Improvement] Persistence option `Memory`, `Cookie`, `LocalStorage` via constructor `new Tour({persistence:"LocalStorage"})`
@@ -17,6 +17,7 @@ New features
 - [Improvement] `Tour` constructor now accept a `hidePrev` flag, if set to true, the `prev` button will always be hidden.
 - [Bug fix] Don't create unnecessary $() objects
 - [Bug fix] Remove event handlers after each step when `reflex:true`
+- [Bug fix] `onHide`, `onShow`, `onShown` callbacks at the step level should not override `onHide`, `onShow`, `onShown` at the tour level
 
 ## Getting Started
 Download the [production version][min] or the [development version][max].
