@@ -2,3 +2,8 @@ language: node_js
 node_js:
   - 0.6
   - 0.8
+branches:
+  only:
+    - master
+before_script: grunt compile
+script: phantomjs test/qunit/run-qunit.js test/test.html
