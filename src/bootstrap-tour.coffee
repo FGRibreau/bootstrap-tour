@@ -10,6 +10,22 @@
 (($, window) ->
   document = window.document
 
+  class Backend
+    setState: (options, key, value) ->
+    getState: (options, key) ->
+
+  class None extends Backend
+  class Cookie extends Backend
+    setState: (options, key, value) ->
+      $.cookie("#{options.name}_#{key}", value, { expires: 36500, path: '/' })
+    getState: (options, key) ->
+      $.cookie("#{options.name}_#{key}")
+
+
+  backend =
+    none: None
+    cookie: Cookie
+
   class Tour
     constructor: (options) ->
       @_options = $.extend({
@@ -19,6 +35,10 @@
           next: 'Next &raquo;'
           prev: '&laquo; Prev'
         }
+        #
+        # {String} "cookie" | "none" (default "cookie")
+        #
+        persistence: 'cookie'
         keyboard: true
         afterSetState: (key, value) ->
         afterGetState: (key, value) ->
@@ -27,6 +47,9 @@
         onShown: (tour) ->
       }, options)
 
+      # Setup persistence
+      @persistence = new backend[if @_options.persistence of backend then  @_options.persistence else "none"]();
+
       @_steps = []
       @setCurrentStep()
 
@@ -34,11 +57,11 @@
       @_onresize(=> @showStep(@_current) unless @ended)
 
     setState: (key, value) ->
-      $.cookie("#{@_options.name}_#{key}", value, { expires: 36500, path: '/' })
+      @persistence.setState(@_options, key, value);
       @_options.afterSetState(key, value)
 
     getState: (key) ->
-      value = $.cookie("#{@_options.name}_#{key}")
+      value = @persistence.getState(@_options, key);
       @_options.afterGetState(key, value)
       return value
 
