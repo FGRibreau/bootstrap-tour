@@ -191,16 +191,19 @@ test "Tour with onShown option should run the callback after showing the step", 
   strictEqual(tour_test, 2, "tour runs onShown after first step shown")
 
 test "Tour with onHide option should run the callback before hiding the step", ->
-  expect(4)
+  expect(6)
 
   tour_test = 0
+  $el1 = $("<div></div>").appendTo("#qunit-fixture")
+  $el2 = $("<div></div>").appendTo("#qunit-fixture")
   @tour = new Tour({
     onHide: (tour, e) ->
       equal(e.trigger, "api")
+      ok(e.element.is($el1) || e.element.is($el2), "e.element should be specified")
       tour_test += 2
   })
-  @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})
-  @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})
+  @tour.addStep({element: $el1})
+  @tour.addStep({element: $el2})
   @tour.start()
   @tour.next()
   strictEqual(tour_test, 2, "tour runs onHide when first step hidden")

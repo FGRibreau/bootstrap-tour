@@ -251,20 +251,23 @@ test("Tour with onShown option should run the callback after showing the step", 
 });
 
 test("Tour with onHide option should run the callback before hiding the step", function() {
-  var tour_test;
-  expect(4);
+  var $el1, $el2, tour_test;
+  expect(6);
   tour_test = 0;
+  $el1 = $("<div></div>").appendTo("#qunit-fixture");
+  $el2 = $("<div></div>").appendTo("#qunit-fixture");
   this.tour = new Tour({
     onHide: function(tour, e) {
       equal(e.trigger, "api");
+      ok(e.element.is($el1) || e.element.is($el2), "e.element should be specified");
       return tour_test += 2;
     }
   });
   this.tour.addStep({
-    element: $("<div></div>").appendTo("#qunit-fixture")
+    element: $el1
   });
   this.tour.addStep({
-    element: $("<div></div>").appendTo("#qunit-fixture")
+    element: $el2
   });
   this.tour.start();
   this.tour.next();

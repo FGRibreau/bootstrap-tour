@@ -112,6 +112,9 @@
 
     _initEvent: (e = {}) ->
       e.trigger = "api" if !e.trigger
+      step = @getStep(@_current)
+      if step and !e.element
+        e.element = @getElement(step.element)
       e
 
     # Hide current step and show next step
@@ -180,7 +183,7 @@
         document.location.href = step.path
         return
 
-      step.onShow(@) if step.onShow?
+      step.onShow(@, @_initEvent()) if step.onShow?
 
       # If step element is hidden, skip step
       unless step.element? && $el.length != 0 && $el.is(":visible")
@@ -308,7 +311,7 @@
       addClass:""
       afterSetState: (key, value) ->
       afterGetState: (key, value) ->
-      onShow: (tour) ->
+      onShow: (tour, event) ->
       onHide: (tour, event) ->
       onShown: (tour) ->
 
