@@ -1,14 +1,15 @@
-# Bootstrap Tour [![Build Status](https://travis-ci.org/FGRibreau/bootstrap-tour.png)](https://travis-ci.org/FGRibreau/bootstrap-tour)
+# Bootstrap Tour Extended [![Build Status](https://travis-ci.org/FGRibreau/bootstrap-tour.png)](https://travis-ci.org/FGRibreau/bootstrap-tour)
 
 Quick and easy product tours with Twitter Bootstrap Popovers.
 
-Fork of [sorich87 bootstrap-tour](http://sorich87.github.com/bootstrap-tour/).
+Fork of [sorich87 bootstrap-tour v1](http://sorich87.github.com/bootstrap-tour/).
 
 Extra features
 ------------
 
 ### Improvement
 - `Tour` constructor now accept a `template` attribute thus the `labels.*` attribute has been removed.
+- `Tour` now emits an `skipping(step)` event when skipping a step because the element is not visible.
 - `next()` and `prev()` return promise that is resolved when the popover is shown and that all callbacks have been executed
 - If `onShow` (at the `step` level or `Tour` level) returns a promise (see [$.Deferred()](http://api.jquery.com/category/deferred-object/)), Bootstrap-tour will wait until the completition of the promise(s) before displaying the popover
 - Persistence option `Memory`, `Cookie`, `LocalStorage` via constructor `new Tour({persistence:"LocalStorage"})`
@@ -20,6 +21,7 @@ Extra features
 - the popover element now have an automatically added `{tour.name}-step{step.index}` css class
 
 ### Bug fix
+- In `reflex` mode, leave the same css pointer as it was.
 - Don't create unnecessary $() objects
 - Remove event handlers after each step when `reflex:true`
 - `onHide`, `onShow`, `onShown` callbacks at the step level should not override `onHide`, `onShow`, `onShown` at the tour level
@@ -51,6 +53,10 @@ tour.addStep({
 // Start the tour
 tour.start();
 
+tour.on('skipping', function(step){
+  console.log("Step", step.index, "was skipped");
+});
+
 // Now next() and prev() return a promise that is resolved when all callbacks are called
 // and the popover is shown
 tour.next().then(console.log.bind(console, "done"));
@@ -67,22 +73,17 @@ The `Tour` constructor accepts an option object with the following optional attr
 #
 # {String} This option is used to build the name of the cookie where the tour state is stored. You can initialize several tours with different names in the same page and application.
 #
-name: 'tour'
+name: "tour"
 
 #
 # {String} "Cookie" | "LocalStorage" | "Memory" (default "Memory")
 # Note: persistence: "Cookie" requires jquery.cookie.js
-persistence: 'Memory'
+persistence: "Memory"
 
 #
 # {Boolean} Keyboard navigation
 #
 keyboard: true
-
-#
-# {String} Css class to add to the .popover element
-#
-addClass:""
 
 #
 # {Function} Navigation template, `.prev`, `.next` and `.end`
@@ -101,30 +102,62 @@ template:(step) ->
     </p>
   '''
 
-#
-# {Function} Function to execute right before each step is shown.
-# If onShow returns a promise (see $.Deferred() documentation), Bootstrap-tour will wait until
-# completition of the promise before displaying the popover
-#
-onShow: (tour, event) ->
-
-#
-# {Function} Function to execute right after each step is shown.
-#
-onShown: (tour, event) ->
-
-#
-# {Function} Function to execute right before each step is hidden.
-#
-onHide: (tour, event) ->
-
 afterSetState: (key, value) ->
 afterGetState: (key, value) ->
+
+#
+# Global step settings shared between the steps
+#
+step:
+  #
+  # {String | Function(step)} Default step title
+  #
+  title:null
+
+  #
+  # {String | Function(step)} Default step content
+  #
+  content:null
+
+  #
+  # {String} Css class to add to the .popover element
+  #
+  # Note: if `addClass` is defined at the step level, the two defined `addClass` will
+  # be taken into account in the popover
+  addClass:""
+
+  #
+  # {Function} Function to execute right before each step is shown.
+  # If onShow returns a promise (see $.Deferred() documentation), Bootstrap-tour will wait until
+  # completition of the promise before displaying the popover
+  #
+  # Note: if `onShow` is defined at the step level, the two defined `onShow`
+  # callbacks will be taken into account in the step.
+  onShow: (tour, event) ->
+
+  #
+  #  {Function} Function to execute right after each step is shown.
+  #
+  # Note: if `onShown` is defined at the step level, the two defined `onShown`
+  # callbacks will be taken into account in the step.
+  onShown: (tour, event) ->
+
+  #
+  # {Function} Function to execute right before each step is hidden.
+  #
+  # Note: if `onHide` is defined at the step level, the two defined `onHide`
+  # callbacks will be taken into account in the step.
+  onHide: (tour, event) ->
 ```
 
 ### `.addStep(options)` options object
 
 ```coffeescript
+#
+# Step index
+#
+index: i
+
 #
 # {String} Path to the page on which the step should be shown. this allows you
 # to build tours that span several pages!
@@ -143,12 +176,12 @@ element:null
 placement: "right"
 
 #
-# {String} Step title
+# {String | Function(step)} Step title
 #
 title: ""
 
 #
-# {String} Step content
+# {String | Function(step)} Step content
 #
 content: ""
 
@@ -175,6 +208,7 @@ animation: true
 # {Boolean} Enable the reflex mode, click on the element to continue the tour
 #
 reflex: false
+
 
 #
 # {String} Css class to add to the .popover element for this step only
