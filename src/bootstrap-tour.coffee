@@ -152,8 +152,10 @@
       }, @_steps[i]) if @_steps[i]?
 
     # Start tour from current step
+    # Returns a Deferred
     start: (force = false) ->
-      return if @ended() && !force
+      def = $.Deferred()
+      return def.fail("Tour ended").promise() if @ended() && !force
 
       # Go to next step after click on element with class .next
       $(document).off("click.bootstrap-tour",".popover .next").on "click.bootstrap-tour", ".popover .next", (e) =>
@@ -172,7 +174,9 @@
 
       @_setupKeyboardNavigation()
 
-      @showStep(@_current)
+      @showStep(@_current, def)
+
+      def.promise()
 
     # Event object:
     # `{String}` `trigger`:: `api | popover | reflex`
@@ -188,14 +192,24 @@
       e
 
     # Hide current step and show next step
+    # Returns a promise
     next:(e) ->
+      def = $.Deferred()
       @hideStep(@_current, @_initEvent(e))
-      @showNextStep()
+      setTimeout(() =>
+        @showNextStep(def)
+      , 0)
+      def.promise()
 
     # Hide current step and show prev step
+    # Returns a promise
     prev:(e)->
+      def = $.Deferred()
       @hideStep(@_current, @_initEvent(e))
-      @showPrevStep()
+      setTimeout(() =>
+        @showPrevStep(def)
+      , 0)
+      def.promise()
 
     # End tour
     end:(e) ->
@@ -246,10 +260,14 @@
       return $.Deferred().resolve().promise()
 
     # Show the specified step
-    showStep: (i) ->
+    # i : step number
+    # def (optional) the deferred to resolve
+    showStep: (i, def) ->
       step = @getStep(i)
 
-      return unless step
+      unless step
+        def.reject() if def
+        return
 
       @setCurrentStep(i)
 
@@ -271,7 +289,7 @@
 
         # If step element is hidden, skip step
         unless step.element? && $el.length != 0 && $el.is(":visible")
-          @showNextStep()
+          @showNextStep(def)
           return
 
         # Show popover
@@ -279,6 +297,8 @@
 
         step.onShown(@, e) if step.onShown?
         @_options.onShown(@, e) if @_options.onShown isnt step.onShown
+
+        def.resolve() if def
       )
 
     # Setup current step variable
@@ -294,14 +314,14 @@
           @_current = parseInt(@_current, 10)
 
     # Show next step
-    showNextStep: ->
+    showNextStep: (def) ->
       step = @getStep(@_current)
-      @showStep(step.next)
+      @showStep(step.next, def)
 
     # Show prev step
-    showPrevStep: ->
+    showPrevStep: (def) ->
       step = @getStep(@_current)
-      @showStep(step.prev)
+      @showStep(step.prev, def)
 
     # Show step popover
     _showPopover: (step, i) ->

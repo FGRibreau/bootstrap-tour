@@ -9,6 +9,7 @@ Extra features
 
 ### Improvement
 - `Tour` constructor now accept a `template` attribute thus the `labels.*` attribute has been removed.
+- `next()` and `prev()` return promise that is resolved when the popover is shown and that all callbacks have been executed
 - If `onShow` (at the `step` level or `Tour` level) returns a promise (see [$.Deferred()](http://api.jquery.com/category/deferred-object/)), Bootstrap-tour will wait until the completition of the promise(s) before displaying the popover
 - Persistence option `Memory`, `Cookie`, `LocalStorage` via constructor `new Tour({persistence:"LocalStorage"})`
 - `onHide`, `onShow` and `onShown` callbacks now have a second argument `Event` with
@@ -45,9 +46,14 @@ tour.addStep({
   title: "", /* title of the popover */
   content: "" /* content of the popover */
 });
+// etc...
 
 // Start the tour
 tour.start();
+
+// Now next() and prev() return a promise that is resolved when all callbacks are called
+// and the popover is shown
+tour.next().then(console.log.bind(console, "done"));
 </script>
 ```
 

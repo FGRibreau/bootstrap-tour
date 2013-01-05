@@ -1,3 +1,4 @@
+var _when;
 
 module("bootstrap-tour", {
   teardown: function() {
@@ -11,6 +12,30 @@ module("bootstrap-tour", {
     return $('.popover').remove();
   }
 });
+
+/*
+Execute sequentially the array of functions
+@author FGRibreau
+@param  {Array} arr Array of functions that return a promise
+@param  {Object} ctx (optional)
+@return {Deferred}
+*/
+
+
+_when = function(arr, ctx) {
+  var def, next;
+  next = function() {
+    var fn;
+    fn = arr.shift();
+    if (!fn) {
+      return def.resolve();
+    }
+    return fn.call(ctx).then(next);
+  };
+  def = $.Deferred();
+  next();
+  return def.promise();
+};
 
 test("Tour should set the tour options", function() {
   this.tour = new Tour({
@@ -232,8 +257,9 @@ test("Tour with onShow option should run the callback before showing the step", 
   });
   this.tour.start();
   strictEqual(tour_test, 2, "tour runs onShow when first step shown");
-  this.tour.next();
-  return strictEqual(tour_test, 4, "tour runs onShow when next step shown");
+  return $.when(this.tour.next(), function() {
+    return strictEqual(tour_test, 4, "tour runs onShow when next step shown");
+  });
 });
 
 test("Tour with onShow option should wait on the promise callback", function() {
@@ -369,8 +395,9 @@ test("Tour.addStep with onShow option should run the callback before showing the
   });
   this.tour.start();
   strictEqual(tour_test, 0, "tour does not run onShow when step not shown");
-  this.tour.next();
-  return strictEqual(tour_test, 2, "tour runs onShow when step shown");
+  return $.when(this.tour.next(), function() {
+    return strictEqual(tour_test, 2, "tour runs onShow when step shown");
+  });
 });
 
 test("Tour.addStep with onHide option should run the callback before hiding the step", function() {
@@ -465,17 +492,68 @@ test("Tour `hidePrev should always add prev", function() {
 });
 
 test("Tour.next should hide current step and show next step", function() {
+  var _this = this;
+  expect(2);
   this.tour = new Tour();
   this.tour.addStep({
     element: $("<div></div>").appendTo("#qunit-fixture")
+  });
+  this.tour.addStep({
+    element: $("<div class='ok'></div>").appendTo("#qunit-fixture")
+  });
+  QUnit.stop();
+  return _when([this.tour.start, this.tour.next], this.tour).then(function() {
+    QUnit.start();
+    strictEqual(_this.tour.getStep(0).element.data("popover").tip().filter(":visible").length, 0, "tour hides current step");
+    return strictEqual(_this.tour.getStep(1).element.data("popover").tip().filter(":visible").length, 1, "tour shows next step");
+  });
+});
+
+test("Tour.next should return a promise", function() {
+  expect(1);
+  this.tour = new Tour();
+  this.tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture"),
+    onShow: function() {
+      var def;
+      def = $.Deferred();
+      setTimeout(def.resolve, 10);
+      return def.promise();
+    }
+  });
+  this.tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture")
+  });
+  this.tour.start();
+  QUnit.stop();
+  return this.tour.next().then(function() {
+    QUnit.start();
+    return ok(true, "executed");
+  });
+});
+
+test("Tour.prev should return a promise", function() {
+  expect(1);
+  this.tour = new Tour();
+  this.tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture"),
+    onShow: function() {
+      var def;
+      def = $.Deferred();
+      setTimeout(def.resolve, 10);
+      return def.promise();
+    }
   });
   this.tour.addStep({
     element: $("<div></div>").appendTo("#qunit-fixture")
   });
   this.tour.start();
   this.tour.next();
-  strictEqual(this.tour.getStep(0).element.data("popover").tip().filter(":visible").length, 0, "tour hides current step");
-  return strictEqual(this.tour.getStep(1).element.data("popover").tip().filter(":visible").length, 1, "tour shows next step");
+  QUnit.stop();
+  return this.tour.prev().then(function() {
+    QUnit.start();
+    return ok(true, "executed");
+  });
 });
 
 test("Tour.end should hide current step and set end state", function() {
