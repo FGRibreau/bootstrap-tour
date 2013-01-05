@@ -431,6 +431,7 @@ test("Tour.getStep should get a step", function() {
     content: "Just a test",
     addClass: "",
     prev: -1,
+    index: 0,
     reflex: false,
     next: 2,
     end: false,
@@ -642,21 +643,26 @@ test("Tour.showStep should skip step when no element is specified", function() {
 });
 
 test("Tour.showStep should skip step when element doesn't exist", function() {
+  expect(3);
   this.tour = new Tour();
+  this.tour.one('skipping', function(e) {
+    equal(e.type, "skipping");
+    return equal(e.step.index, 0);
+  });
   this.tour.addStep({
     element: "#tour-test"
   });
   this.tour.addStep({
     element: $("<div></div>").appendTo("#qunit-fixture")
   });
-  this.tour.showStep(1);
+  this.tour.showStep(0);
   return strictEqual(this.tour.getStep(1).element.data("popover").tip().filter(":visible").length, 1, "tour skips step with no element");
 });
 
 test("Tour.showStep should skip step when element is invisible", function() {
   this.tour = new Tour();
   this.tour.addStep({
-    element: $("<div></div>").appendTo("#qunit-fixture").hide()
+    element: $("<div class='hidden-div'></div>").appendTo("#qunit-fixture").hide()
   });
   this.tour.addStep({
     element: $("<div></div>").appendTo("#qunit-fixture")

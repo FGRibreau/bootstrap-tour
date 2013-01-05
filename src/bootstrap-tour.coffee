@@ -52,6 +52,12 @@
     constructor: (options) ->
       @_options = $.extend({}, Tour.defaults, options)
 
+      # For event handling only
+      # Note: I wish I could add underscore as a dependency (or something else)
+      @_evt = $('<div/>')
+      @bind = $.proxy(@_evt.bind, @_evt)
+      @one = $.proxy(@_evt.one, @_evt)
+
       # Setup persistence
       @persistence = new backend[if @_options.persistence of backend then  @_options.persistence else "Memory"](@_options);
 
@@ -77,6 +83,11 @@
     # Get a step by its indice
     getStep: (i) ->
       $.extend({
+        #
+        # Step index
+        #
+        index: i
+
         #
         # {String} Path to the page on which the step should be shown. this allows you
         # to build tours that span several pages!
@@ -287,8 +298,9 @@
         $el = @getElement(step.element)
         e = @_initEvent(element:$el)
 
-        # If step element is hidden, skip step
-        unless step.element? && $el.length != 0 && $el.is(":visible")
+        # If step element is hidden or does not exist, skip step
+        if $el.length is 0 or not $el.is(":visible")
+          @_evt.trigger(jQuery.Event("skipping", step:step));
           @showNextStep(def)
           return
 
