@@ -86,7 +86,8 @@ persistence: "Memory"
 keyboard: true
 
 #
-# {Function} Navigation template, `.prev`, `.next` and `.end`
+# {Function} Navigation template,
+# Element with `.prev`, `.next` and `.end` MAY be present and
 # will be removed at runtime if necessary
 #
 # The template can be an underscore template or $.tmpl ...
