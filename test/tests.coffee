@@ -9,6 +9,24 @@ module("bootstrap-tour",
     $('.popover').remove();
 )
 
+
+###
+Execute sequentially the array of functions
+@author FGRibreau
+@param  {Array} arr Array of functions that return a promise
+@param  {Object} ctx (optional)
+@return {Deferred}
+###
+_when = (arr, ctx) ->
+  next = ->
+    fn = arr.shift()
+    return def.resolve()  unless fn
+    fn.call(ctx).then next
+  def = $.Deferred()
+  next()
+  def.promise()
+
+
 test "Tour should set the tour options", ->
   @tour = new Tour({
     name: "test"
@@ -176,8 +194,11 @@ test "Tour with onShow option should run the callback before showing the step", 
   @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})
   @tour.start()
   strictEqual(tour_test, 2, "tour runs onShow when first step shown")
-  @tour.next()
-  strictEqual(tour_test, 4, "tour runs onShow when next step shown")
+
+  $.when(@tour.next(), () ->
+    strictEqual(tour_test, 4, "tour runs onShow when next step shown")
+  )
+
 
 test "Tour with onShow option should wait on the promise callback", ->
   @tour = new Tour()
@@ -274,8 +295,9 @@ test "Tour.addStep with onShow option should run the callback before showing the
       tour_test = 2 })
   @tour.start()
   strictEqual(tour_test, 0, "tour does not run onShow when step not shown")
-  @tour.next()
-  strictEqual(tour_test, 2, "tour runs onShow when step shown")
+  $.when(@tour.next(), () ->
+    strictEqual(tour_test, 2, "tour runs onShow when step shown")
+  )
 
 test "Tour.addStep with onHide option should run the callback before hiding the step", ->
   tour_test = 0
@@ -342,14 +364,60 @@ test "Tour `hidePrev should always add prev", ->
   equal($('.popover .prev').length, 0, ".prev should be hidden");
 
 
+
 test "Tour.next should hide current step and show next step", ->
+  expect(2)
   @tour = new Tour()
+  @tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture")
+  })
+  @tour.addStep({
+    element: $("<div class='ok'></div>").appendTo("#qunit-fixture")
+  })
+
+  QUnit.stop();
+  _when([@tour.start, @tour.next], @tour).then(() =>
+    QUnit.start();
+    strictEqual(@tour.getStep(0).element.data("popover").tip().filter(":visible").length, 0, "tour hides current step")
+    strictEqual(@tour.getStep(1).element.data("popover").tip().filter(":visible").length, 1, "tour shows next step")
+  )
+
+test "Tour.next should return a promise", ->
+  expect(1)
+  @tour = new Tour()
+  @tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture")
+    onShow: () ->
+      def = $.Deferred()
+      setTimeout(def.resolve, 10)
+      def.promise()
+  })
   @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})
+  @tour.start()
+  QUnit.stop()
+  @tour.next().then(() ->
+    QUnit.start()
+    ok(true, "executed")
+  )
+
+test "Tour.prev should return a promise", ->
+  expect(1)
+  @tour = new Tour()
+  @tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture")
+    onShow: () ->
+      def = $.Deferred()
+      setTimeout(def.resolve, 10)
+      def.promise()
+  })
   @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})
   @tour.start()
   @tour.next()
-  strictEqual(@tour.getStep(0).element.data("popover").tip().filter(":visible").length, 0, "tour hides current step")
-  strictEqual(@tour.getStep(1).element.data("popover").tip().filter(":visible").length, 1, "tour shows next step")
+  QUnit.stop()
+  @tour.prev().then(() ->
+    QUnit.start()
+    ok(true, "executed")
+  )
 
 test "Tour.end should hide current step and set end state", ->
   @tour = new Tour()
