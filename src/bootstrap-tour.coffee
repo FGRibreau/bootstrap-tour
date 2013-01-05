@@ -242,14 +242,14 @@
 
     # Hide the specified step
     hideStep: (i, e) ->
-      e = @_initEvent() if !e
+      e    = @_initEvent() if !e
       step = @getStep(i)
-      $el = @getElement(step.element)
+      $el  = @getElement(step.element)
       step.onHide(@, e) if step.onHide?
       @_options.onHide(@, e) if @_options.onHide isnt step.onHide
 
       if step.reflex
-        $el.css("cursor", "auto").off("click.tour")
+        $el.css("cursor", "").off("click.tour")
 
       $el.popover("hide")
 

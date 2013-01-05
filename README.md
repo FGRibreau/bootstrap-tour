@@ -20,6 +20,7 @@ Extra features
 - the popover element now have an automatically added `{tour.name}-step{step.index}` css class
 
 ### Bug fix
+- In `reflex` mode, leave the same css pointer as it was.
 - Don't create unnecessary $() objects
 - Remove event handlers after each step when `reflex:true`
 - `onHide`, `onShow`, `onShown` callbacks at the step level should not override `onHide`, `onShow`, `onShown` at the tour level
