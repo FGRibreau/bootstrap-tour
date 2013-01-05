@@ -50,7 +50,7 @@
 
   class Tour
     constructor: (options) ->
-      @_options = $.extend({}, Tour.defaults, options)
+      @_options = $.extend(true, {}, Tour.defaults, options)
 
       # For event handling only
       # Note: I wish I could add underscore as a dependency (or something else)
@@ -106,12 +106,12 @@
         placement: "right"
 
         #
-        # {String} Step title
+        # {String | Function(step)} Step title
         #
         title: ""
 
         #
-        # {String} Step content
+        # {String | Function(step)} Step content
         #
         content: ""
 
@@ -138,6 +138,7 @@
         # {Boolean} Enable the reflex mode, click on the element to continue the tour
         #
         reflex: false
+
 
         #
         # {String} Css class to add to the .popover element for this step only
@@ -257,7 +258,7 @@
       step = @getStep(i)
       $el  = @getElement(step.element)
       step.onHide(@, e) if step.onHide?
-      @_options.onHide(@, e) if @_options.onHide isnt step.onHide
+      @_options.step.onHide(@, e) if @_options.step.onHide isnt step.onHide
 
       if step.reflex
         $el.css("cursor", "").off("click.tour")
@@ -292,7 +293,7 @@
 
       defs = []
       defs.push(@_deferred(step.onShow(@, e))) if step.onShow?
-      defs.push(@_deferred(@_options.onShow(@, e))) if @_options.onShow isnt step.onShow
+      defs.push(@_deferred(@_options.step.onShow(@, e))) if @_options.step.onShow isnt step.onShow
 
       $.when.apply($, defs).always(() =>
         $el = @getElement(step.element)
@@ -308,7 +309,7 @@
         @_showPopover(step, i)
 
         step.onShown(@, e) if step.onShown?
-        @_options.onShown(@, e) if @_options.onShown isnt step.onShown
+        @_options.step.onShown(@, e) if @_options.step.onShown isnt step.onShown
 
         def.resolve() if def
       )
@@ -339,7 +340,8 @@
     _showPopover: (step, i) ->
       $el     = @getElement(step.element)
 
-      options = $.extend {}, @_options
+      options = $.extend true, {}, @_options
+      # options = @_options
 
       if step.options
         $.extend options, step.options
@@ -349,6 +351,7 @@
           .css("cursor", "pointer")
           .on "click.tour", (e) => @next(trigger:'reflex')
 
+      step.content = @_getProp(step, options.step, "content", step)
       $nav = $(options.template(step)).wrapAll('<div/>').parent()
 
       if step.prev == 0
@@ -362,14 +365,14 @@
       $el.popover({
         placement: step.placement
         trigger: "manual"
-        title: step.title
+        title: @_getProp(step, options.step, "title", step)
         content: content
         html: true
         animation: step.animation
       });
 
       popover = $el.data("popover")
-      tip     = popover.tip().addClass("#{options.name}-step#{i} #{options.addClass} #{step.addClass}")
+      tip     = popover.tip().addClass("#{options.name}-step#{i} #{options.step.addClass} #{step.addClass}")
       popover.show()
       @_reposition(tip)
       @_scrollIntoView(tip)
@@ -413,6 +416,13 @@
               if @_current > 0
                 @prev()
 
+    # The val is a function
+    _execOrGet: (val, arg) -> if $.isFunction(val) then val(arg) else val
+    # obj : first option
+    # objRoot: second option
+    # prop: prop to get
+    _getProp: (obj, obj2, prop, args...) -> if obj[prop] then @_execOrGet(obj[prop], args...) else @_execOrGet(obj2[prop], args...)
+
 
     Tour.defaults =
       #
@@ -431,11 +441,6 @@
       keyboard: true
 
       #
-      # {String} Css class to add to the .popover element
-      #
-      addClass:""
-
-      #
       # {Function} Navigation template, `.prev`, `.next` and `.end`
       # will be removed at runtime if necessary
       #
@@ -452,25 +457,53 @@
           </p>
         '''
 
-      #
-      # {Function} Function to execute right before each step is shown.
-      # If onShow returns a promise (see $.Deferred() documentation), Bootstrap-tour will wait until
-      # completition of the promise before displaying the popover
-      #
-      onShow: (tour, event) ->
-
-      #
-      # {Function} Function to execute right after each step is shown.
-      #
-      onShown: (tour, event) ->
-
-      #
-      # {Function} Function to execute right before each step is hidden.
-      #
-      onHide: (tour, event) ->
-
       afterSetState: (key, value) ->
       afterGetState: (key, value) ->
+
+      #
+      # Global step settings shared between the steps
+      #
+      step:
+        #
+        # {String | Function(step)} Default step title
+        #
+        title:null
+
+        #
+        # {String | Function(step)} Default step content
+        #
+        content:null
+
+        #
+        # {String} Css class to add to the .popover element
+        #
+        # Note: if `addClass` is defined at the step level, the two defined `addClass` will
+        # be taken into account in the popover
+        addClass:""
+
+        #
+        # {Function} Function to execute right before each step is shown.
+        # If onShow returns a promise (see $.Deferred() documentation), Bootstrap-tour will wait until
+        # completition of the promise before displaying the popover
+        #
+        # Note: if `onShow` is defined at the step level, the two defined `onShow`
+        # callbacks will be taken into account in the step.
+        onShow: (tour, event) ->
+
+        #
+        #  {Function} Function to execute right after each step is shown.
+        #
+        # Note: if `onShown` is defined at the step level, the two defined `onShown`
+        # callbacks will be taken into account in the step.
+        onShown: (tour, event) ->
+
+        #
+        # {Function} Function to execute right before each step is hidden.
+        #
+        # Note: if `onHide` is defined at the step level, the two defined `onHide`
+        # callbacks will be taken into account in the step.
+        onHide: (tour, event) ->
+
 
   window.Tour = Tour
 
