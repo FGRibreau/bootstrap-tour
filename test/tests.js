@@ -469,7 +469,8 @@ test("Tour.getStep should get a step", function() {
     animation: false,
     onShow: function(tour) {},
     onHide: function(tour) {},
-    onShown: function(tour) {}
+    onShown: function(tour) {},
+    onEnd: function(tour) {}
   };
   this.tour.addStep(step);
   return deepEqual(this.tour.getStep(0), step, "tour gets a step");
@@ -502,25 +503,6 @@ test("Tour.start(true) should force starting a tour that ended", function() {
   this.tour.setState("end", "yes");
   this.tour.start(true);
   return strictEqual($(".popover").length, 1, "previously ended tour starts again if forced to");
-});
-
-test("Tour `hidePrev should always add prev", function() {
-  this.tour = new Tour({
-    hidePrev: true
-  });
-  this.tour.addStep({
-    element: $("<div></div>").appendTo("#qunit-fixture"),
-    title: "ok",
-    content: "ok"
-  });
-  this.tour.addStep({
-    element: $("<div></div>").appendTo("#qunit-fixture"),
-    title: "ok",
-    content: "ok"
-  });
-  this.tour.start();
-  this.tour.next();
-  return equal($('.popover .prev').length, 0, ".prev should be hidden");
 });
 
 test("Tour.next should hide current step and show next step", function() {

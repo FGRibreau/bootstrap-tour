@@ -353,6 +353,7 @@ test "Tour.getStep should get a step", ->
     onShow: (tour) ->
     onHide: (tour) ->
     onShown: (tour) ->
+    onEnd: (tour) ->
   }
   @tour.addStep(step)
   deepEqual(@tour.getStep(0), step, "tour gets a step")
@@ -376,15 +377,6 @@ test "Tour.start(true) should force starting a tour that ended", ->
   @tour.setState("end", "yes")
   @tour.start(true)
   strictEqual($(".popover").length, 1, "previously ended tour starts again if forced to")
-
-test "Tour `hidePrev should always add prev", ->
-  @tour = new Tour(hidePrev:true)
-  @tour.addStep(element: $("<div></div>").appendTo("#qunit-fixture"), title:"ok", content:"ok")
-  @tour.addStep(element: $("<div></div>").appendTo("#qunit-fixture"), title:"ok", content:"ok")
-  @tour.start()
-  @tour.next()
-  equal($('.popover .prev').length, 0, ".prev should be hidden");
-
 
 
 test "Tour.next should hide current step and show next step", ->
@@ -416,7 +408,6 @@ test "Tour.next should return a promise", ->
   })
   # deepEqual(@tour._options.step.onHide(), undefined)
   # deepEqual(Tour.defaults.step.onHide(), undefined)
-
   @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})
   QUnit.stop()
   _when([@tour.start, @tour.next], @tour).then(() =>

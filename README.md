@@ -1,6 +1,6 @@
 # Bootstrap Tour Extended [![Build Status](https://travis-ci.org/FGRibreau/bootstrap-tour.png)](https://travis-ci.org/FGRibreau/bootstrap-tour)
 
-Quick and easy product tours with Twitter Bootstrap Popovers.
+Quick and easy *and extremely configurable* product tours with Twitter Bootstrap Popovers.
 
 Fork of [sorich87 bootstrap-tour v1](http://sorich87.github.com/bootstrap-tour/).
 

@@ -177,6 +177,11 @@
         # {Function} Function to execute right before each step is hidden.
         #
         onHide: (tour, event) ->
+
+        #
+        # {Function} Function to execute on end
+        #
+        onEnd: (tour, event) ->
       }, @_steps[i]) if @_steps[i]?
 
     # Start tour from current step
@@ -239,9 +244,13 @@
 
     # End tour
     end:(e) ->
-      @hideStep(@_current, @_initEvent(e))
+      e = @_initEvent(e)
+      @hideStep(@_current, e)
       $(document).off ".bootstrap-tour"
       @setState("end", "yes")
+      step = @getStep(@_current)
+      step.onEnd(@, e) if step and step.onEnd?
+      @_options.step.onEnd(@, e) if @_options.step.onEnd isnt step.onEnd
 
     # Verify if tour is enabled
     ended: ->
@@ -402,9 +411,9 @@
       step.content = @_getProp(step, options.step, "content", step)
       $nav = $(options.template(step)).wrapAll('<div/>').parent()
 
-      if step.prev == 0
+      if step.prev == -1
         $nav.find('.prev').remove()
-      if step.next == 0
+      if step.next == -1
         $nav.find('.next').remove()
 
       content = $nav.html()
@@ -420,7 +429,7 @@
       });
 
       popover = $el.data("popover")
-      tip     = popover.tip().addClass("#{options.name}-step#{i} #{options.step.addClass} #{step.addClass}")
+      tip     = popover.tip().addClass("bootstrap-tour #{options.name}-step#{i} #{options.step.addClass} #{step.addClass}")
       popover.show()
       @_reposition(tip)
       @_scrollIntoView(tip)
@@ -451,18 +460,28 @@
 
     # Keyboard navigation
     _setupKeyboardNavigation: ->
-      if @_options.keyboard
-        $(document).on "keyup.bootstrap-tour", (e) =>
-          return unless e.which
-          switch e.which
-            when 39
-              e.preventDefault()
-              if @_current < @_steps.length - 1
-                @next()
-            when 37
-              e.preventDefault()
-              if @_current > 0
-                @prev()
+      if not @_options.keyboard
+        return
+      $(document).on "keyup.bootstrap-tour", $.proxy(@_onKeyUp, @)
+
+    _onKeyUp: (e) ->
+      return unless e.which
+      step = @getStep(@_current)
+      return if not step
+      switch e.which
+        # next
+        when 39
+          e.preventDefault()
+          if step.next != -1 and @_current < @_steps.length - 1
+            @next()
+        # prev
+        when 37
+          e.preventDefault()
+          if step.prev != -1 and @_current > 0
+            @prev()
+
+
+
 
     # The val is a function
     _execOrGet: (val, arg) -> if $.isFunction(val) then val(arg) else val
@@ -495,15 +514,15 @@
       # The template can be an underscore template or $.tmpl ...
       #
       template:(step) ->
-        '''
-          <p>#{step.content}</p>"
+        """
+          <p>#{step.content}</p>
           <hr/>
           <p>
             <a href="#{step.prev}" class="prev">Previous</a>
             <a href="#{step.next}" class="next">Next</a>
             <a href="#" class="pull-right end">End tour</a>
           </p>
-        '''
+        """
 
       afterSetState: (key, value) ->
       afterGetState: (key, value) ->
@@ -551,6 +570,13 @@
         # Note: if `onHide` is defined at the step level, the two defined `onHide`
         # callbacks will be taken into account in the step.
         onHide: (tour, event) ->
+
+        #
+        # {Function} Function to execute on end
+        #
+        # Note: if `onEnd` is defined at the step level, the two defined `onEnd`
+        # callbacks will be taken into account in the step.
+        onEnd: (tour, event) ->
 
 
   window.Tour = Tour
