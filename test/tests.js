@@ -2,14 +2,7 @@ var _when;
 
 module("bootstrap-tour", {
   teardown: function() {
-    this.tour.setState("current_step", null);
-    this.tour.setState("end", null);
-    $.each(this.tour._steps, function(i, s) {
-      if ((s.element != null) && (s.element.popover != null)) {
-        return s.element.popover("hide").removeData("popover");
-      }
-    });
-    return $('.popover').remove();
+    return this.tour.dispose();
   }
 });
 
@@ -50,6 +43,25 @@ test("Tour should set the tour options", function() {
   equal(this.tour._options.name, "test", "options.name is set");
   ok(this.tour._options.afterGetState, "options.afterGetState is set");
   return ok(this.tour._options.afterSetState, "options.afterSetState is set");
+});
+
+test("Tour shouldn't share callback between instance", function() {
+  expect(3);
+  this.tour = new Tour({
+    name: 'tour',
+    step: {
+      onHide: function(tour, e) {
+        return "ok";
+      }
+    }
+  });
+  this.tour2 = new Tour({
+    name: 'tour2'
+  });
+  deepEqual(this.tour._options.step.onHide(), "ok");
+  deepEqual(this.tour2._options.step.onHide(), void 0);
+  deepEqual(Tour.defaults.step.onHide(), void 0);
+  return this.tour2.dispose();
 });
 
 test("Tour should have default name of 'tour'", function() {
@@ -339,7 +351,8 @@ test("Tour with onShown option should run the callback after showing the step", 
 });
 
 test("Tour with onHide option should run the callback before hiding the step", function() {
-  var $el1, $el2, tour_test;
+  var $el1, $el2, tour_test,
+    _this = this;
   expect(6);
   tour_test = 0;
   $el1 = $("<div></div>").appendTo("#qunit-fixture");
@@ -360,10 +373,11 @@ test("Tour with onHide option should run the callback before hiding the step", f
     element: $el2
   });
   this.tour.start();
-  this.tour.next();
-  strictEqual(tour_test, 2, "tour runs onHide when first step hidden");
-  this.tour.hideStep(1);
-  return strictEqual(tour_test, 4, "tour runs onHide when next step hidden");
+  return this.tour.next().always(function() {
+    strictEqual(tour_test, 2, "tour runs onHide when first step hidden");
+    _this.tour.hideStep(1);
+    return strictEqual(tour_test, 4, "tour runs onHide when next step hidden");
+  });
 });
 
 test("Tour with onHide/onShow option should not be overriden by the step onHide/onShow level option", function() {
@@ -528,6 +542,7 @@ test("Tour.next should hide current step and show next step", function() {
 });
 
 test("Tour.next should return a promise", function() {
+  var _this = this;
   expect(1);
   this.tour = new Tour();
   this.tour.addStep({
@@ -542,9 +557,8 @@ test("Tour.next should return a promise", function() {
   this.tour.addStep({
     element: $("<div></div>").appendTo("#qunit-fixture")
   });
-  this.tour.start();
   QUnit.stop();
-  return this.tour.next().then(function() {
+  return _when([this.tour.start, this.tour.next], this.tour).then(function() {
     QUnit.start();
     return ok(true, "executed");
   });
@@ -662,9 +676,9 @@ test("Tour.showStep should skip step when no element is specified", function() {
 test("Tour.showStep should skip step when element doesn't exist", function() {
   expect(3);
   this.tour = new Tour();
-  this.tour.one('skipping', function(e) {
+  this.tour.one('skipping', function(e, step) {
     equal(e.type, "skipping");
-    return equal(e.step.index, 0);
+    return deepEqual(step.index, 0);
   });
   this.tour.addStep({
     element: "#tour-test"

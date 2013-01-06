@@ -11,6 +11,7 @@
   document = window.document
 
   class Backend
+    dispose: () ->
     setState: (options, key, value) ->
     getState: (options, key) ->
 
@@ -22,6 +23,7 @@
       window[@ns][key] = value
     getState: (options, key) ->
       window[@ns][key] or null
+    dispose: -> delete window[@ns]
 
   class Cookie extends Backend
     constructor:(options) ->
@@ -66,6 +68,20 @@
 
       # Reshow popover on window resize using debounced resize
       @_onresize(=> @showStep(@_current) unless @ended)
+
+    dispose:() ->
+      @setState("current_step", null)
+      @setState("end", null)
+      $.each(@_steps, (i, s) ->
+        if s.element? && s.element.popover?
+          s.element.popover("hide").removeData("popover")
+      )
+      $('.popover').remove();
+      $.each(@_options.step, (k) => @_options.step[k] = null)
+      @_evt.unbind()
+      @persistence.dispose()
+      $.each(@_options, (k) => @_options[k] = null)
+
 
     setState: (key, value) ->
       @persistence.setState(@_options, key, value);
@@ -206,11 +222,9 @@
     # Hide current step and show next step
     # Returns a promise
     next:(e) ->
-      def = $.Deferred()
+      def = if e and e.def then e.def else $.Deferred()
       @hideStep(@_current, @_initEvent(e))
-      setTimeout(() =>
-        @showNextStep(def)
-      , 0)
+      @showNextStep(def)
       def.promise()
 
     # Hide current step and show prev step
@@ -232,6 +246,40 @@
     # Verify if tour is enabled
     ended: ->
       !!@getState("end")
+
+    ###
+    Execute sequentially the array of function
+    @param  {Array} arr Array of function that return a promise
+    @param  {Object} ctx (optional)
+    @return {Deferred}
+    ###
+    _when: (arr, ctx) ->
+      def = $.Deferred()
+      next = ->
+        fn = arr.shift()
+        return def.resolve()  unless fn
+        fn.call(ctx).then next
+      next()
+      def.promise()
+
+
+    ###
+    Returns an array of `ipt` `times` times
+    @param  {[type]} count [description]
+    @param  {[type]} ipt   [description]
+    @return {[type]}       [description]
+    ###
+    _mapTimes: (times, ipt) ->
+        o = []
+        while times--
+          o.push ipt
+        o
+
+    ###
+    Goto a step by its index
+    ###
+    gotoStep: (index) -> @_when @_mapTimes(index, @.next), @
+
 
     # Restart tour
     restart: ->
@@ -278,7 +326,7 @@
       step = @getStep(i)
 
       unless step
-        def.reject() if def
+        def.reject("Step #{i} undefined") if def
         return
 
       @setCurrentStep(i)
@@ -297,12 +345,13 @@
 
       $.when.apply($, defs).always(() =>
         $el = @getElement(step.element)
-        e = @_initEvent(element:$el)
+        e   = @_initEvent(element:$el)
 
         # If step element is hidden or does not exist, skip step
         if $el.length is 0 or not $el.is(":visible")
-          @_evt.trigger(jQuery.Event("skipping", step:step));
-          @showNextStep(def)
+          @_evt.triggerHandler("skipping", [step]);
+          # @showNextStep(def)
+          @next(def:def)
           return
 
         # Show popover
@@ -341,7 +390,6 @@
       $el     = @getElement(step.element)
 
       options = $.extend true, {}, @_options
-      # options = @_options
 
       if step.options
         $.extend options, step.options
