@@ -57,11 +57,12 @@
       # For event handling only
       # Note: I wish I could add underscore as a dependency (or something else)
       @_evt = $('<div/>')
-      @bind = $.proxy(@_evt.bind, @_evt)
-      @one = $.proxy(@_evt.one, @_evt)
+      @on   = $.proxy(@_evt.on, @_evt)
+      @off  = $.proxy(@_evt.off, @_evt)
+      @one  = $.proxy(@_evt.one, @_evt)
 
       # Setup persistence
-      @persistence = new backend[if @_options.persistence of backend then  @_options.persistence else "Memory"](@_options);
+      @persistence = new backend[if @_options.persistence of backend then  @_options.persistence else "Memory"](@_options)
 
       @_steps = []
       @setCurrentStep()
@@ -70,39 +71,35 @@
       @_onresize(=> @showStep(@_current) unless @ended)
 
     dispose:() ->
-      @setState("current_step", null)
-      @setState("end", null)
+      @_setState("current_step", null)
+      @_setState("end", null)
       $.each(@_steps, (i, s) ->
         if s.element? && s.element.popover?
           s.element.popover("hide").removeData("popover")
       )
-      $('.popover').remove();
+      $('.popover').remove()
       $.each(@_options.step, (k) => @_options.step[k] = null)
       @_evt.unbind()
       @persistence.dispose()
       $.each(@_options, (k) => @_options[k] = null)
 
 
-    setState: (key, value) ->
-      @persistence.setState(@_options, key, value);
+    _setState: (key, value) ->
+      @persistence.setState(@_options, key, value)
       @_options.afterSetState(key, value)
 
-    getState: (key) ->
-      value = @persistence.getState(@_options, key);
+    _getState: (key) ->
+      value = @persistence.getState(@_options, key)
       @_options.afterGetState(key, value)
       return value
 
     # Add a new step
     addStep: (step) ->
-      @_steps.push step
-
-    # Get a step by its indice
-    getStep: (i) ->
-      $.extend({
+      @_steps.push $.extend({
         #
-        # Step index
         #
-        index: i
+        #
+        index: @_steps.length
 
         #
         # {String} Path to the page on which the step should be shown. this allows you
@@ -132,20 +129,6 @@
         content: ""
 
         #
-        # {Number} Index of the step to show after this one, starting from 0 for the
-        # first step of the tour. -1 to not show the link to next step.
-        # By default, the next step (in the order you added them) will be shown.
-        #
-        next: if i == @_steps.length - 1 then -1 else i + 1
-
-        #
-        # {Number} Index of the step to show before this one, starting from 0 for
-        # the first step of the tour. -1 to not show the link to previous step.
-        # By default, the previous step (in the order you added them) will be shown.
-        #
-        prev: i - 1
-
-        #
         # {Boolean} Apply a css fade transition to the tooltip.
         #
         animation: true
@@ -161,27 +144,46 @@
         #
         addClass:""
 
+        # #
+        # # {Function} Function to execute right before each step is shown.
+        # # If onShow returns a promise (see $.Deferred() documentation), Bootstrap-tour will wait until
+        # # completition of the promise before displaying the popover
+        # #
+        # onShow: (tour, event) ->
+
+        # #
+        # # {Function} Function to execute right after each step is shown.
+        # #
+        # onShown: (tour, event) ->
+
+        # #
+        # # {Function} Function to execute right before each step is hidden.
+        # #
+        # onHide: (tour, event) ->
+
+        # #
+        # # {Function} Function to execute on end
+        # #
+        # onEnd: (tour, event) ->
+      }, step)
+      @
+
+    # Get a step by its indice
+    getStep: (i) ->
+      $.extend({
         #
-        # {Function} Function to execute right before each step is shown.
-        # If onShow returns a promise (see $.Deferred() documentation), Bootstrap-tour will wait until
-        # completition of the promise before displaying the popover
+        # {Number} Index of the step to show after this one, starting from 0 for the
+        # first step of the tour. -1 to not show the link to next step.
+        # By default, the next step (in the order you added them) will be shown.
         #
-        onShow: (tour, event) ->
+        next: if i == @_steps.length - 1 then -1 else i + 1
 
         #
-        # {Function} Function to execute right after each step is shown.
+        # {Number} Index of the step to show before this one, starting from 0 for
+        # the first step of the tour. -1 to not show the link to previous step.
+        # By default, the previous step (in the order you added them) will be shown.
         #
-        onShown: (tour, event) ->
-
-        #
-        # {Function} Function to execute right before each step is hidden.
-        #
-        onHide: (tour, event) ->
-
-        #
-        # {Function} Function to execute on end
-        #
-        onEnd: (tour, event) ->
+        prev: i - 1
       }, @_steps[i]) if @_steps[i]?
 
     # Start tour from current step
@@ -211,14 +213,29 @@
 
       def.promise()
 
+    #
+    # Trigger callbacks for the given event
+    #
+    trigger:(name, opt) -> @_evt.triggerHandler(@_initEvent(name, opt))
+
     # Event object:
-    # `{String}` `trigger`:: `api | popover | reflex`
+    # `{String}` `trigger`: `api | popover | reflex`
+    # `{Object}` `step`:
     # `{jQuery}` `element`: the current step element
+    # `{Function}` `setPromise(promise)`:
     #     Note that `onShow` Event does not provides the `element` attribute use `onShown` instead)
-    _initEvent: (e = {}) ->
+    _initEvent: (name = "", opt = {}) ->
+      e = jQuery.Event(name)
+      $.extend(e, opt)
+
+      if e.defs
+        defs = e.defs
+        e.setPromise = (promise) -> defs.push(promise)
+        delete e.defs
+
       e.trigger = "api" if !e.trigger
-      step = @getStep(@_current)
-      if e.element is false
+      step = e.step = @getStep(@_current) if !e.step
+      if name == "show" or name.indexOf("show:") == 0
         delete e.element
       else if step
         e.element = @getElement(step.element)
@@ -228,33 +245,30 @@
     # Returns a promise
     next:(e) ->
       def = if e and e.def then e.def else $.Deferred()
-      @hideStep(@_current, @_initEvent(e))
+      @hideStep(@_current, e)
       @showNextStep(def)
       def.promise()
 
     # Hide current step and show prev step
     # Returns a promise
     prev:(e)->
-      def = $.Deferred()
-      @hideStep(@_current, @_initEvent(e))
-      setTimeout(() =>
-        @showPrevStep(def)
-      , 0)
+      def = if e and e.def then e.def else $.Deferred()
+      @hideStep(@_current, e)
+      @showPrevStep(def)
       def.promise()
 
     # End tour
     end:(e) ->
-      e = @_initEvent(e)
       @hideStep(@_current, e)
       $(document).off ".bootstrap-tour"
-      @setState("end", "yes")
+      @_setState("end", "yes")
       step = @getStep(@_current)
       step.onEnd(@, e) if step and step.onEnd?
       @_options.step.onEnd(@, e) if @_options.step.onEnd isnt step.onEnd
 
     # Verify if tour is enabled
     ended: ->
-      !!@getState("end")
+      !!@_getState("end")
 
     ###
     Execute sequentially the array of function
@@ -292,8 +306,8 @@
 
     # Restart tour
     restart: ->
-      @setState("current_step", null)
-      @setState("end", null)
+      @_setState("current_step", null)
+      @_setState("end", null)
       @setCurrentStep(0)
       @start()
 
@@ -310,12 +324,14 @@
       return $(el)
 
     # Hide the specified step
-    hideStep: (i, e) ->
-      e    = @_initEvent() if !e
-      step = @getStep(i)
-      $el  = @getElement(step.element)
-      step.onHide(@, e) if step.onHide?
-      @_options.step.onHide(@, e) if @_options.step.onHide isnt step.onHide
+    hideStep: (i, e = {}) ->
+      step = e.step = @getStep(i)
+      $el  = e.element = @getElement(step.element)
+
+      @trigger("hide", e)
+      @trigger("hide:step#{step.index}", e)
+      # step.onHide(@, e) if step.onHide?
+      # @_options.step.onHide(@, e) if @_options.step.onHide isnt step.onHide
 
       if step.reflex
         $el.css("cursor", "").off("click.tour")
@@ -346,28 +362,26 @@
         document.location.href = step.path
         return
 
-      e = @_initEvent(element:false)
-
       defs = []
-      defs.push(@_deferred(step.onShow(@, e))) if step.onShow?
-      defs.push(@_deferred(@_options.step.onShow(@, e))) if @_options.step.onShow isnt step.onShow
+      @trigger("show", step:step, element:false, defs:defs)
+      @trigger("show:step#{step.index}", step:step, element:false, defs:defs)
 
       $.when.apply($, defs).always(() =>
         $el = @getElement(step.element)
-        e   = @_initEvent(element:$el)
 
         # If step element is hidden or does not exist, skip step
         if $el.length is 0 or not $el.is(":visible")
-          @_evt.triggerHandler("skipping", [step]);
+          @trigger("skipping", element:$el, step:step)
           # @showNextStep(def)
           @next(def:def)
           return
 
         # Show popover
         @_showPopover(step, i)
-
-        step.onShown(@, e) if step.onShown?
-        @_options.step.onShown(@, e) if @_options.step.onShown isnt step.onShown
+        @trigger("shown", step:step, element:$el)
+        @trigger("shown:step#{step.index}", step:step, element:$el)
+        # step.onShown(@, e) if step.onShown?
+        # @_options.step.onShown(@, e) if @_options.step.onShown isnt step.onShown
 
         def.resolve() if def
       )
@@ -376,9 +390,9 @@
     setCurrentStep: (value) ->
       if value?
         @_current = value
-        @setState("current_step", value)
+        @_setState("current_step", value)
       else
-        @_current = @getState("current_step")
+        @_current = @_getState("current_step")
         if not @_current or @_current is "null"
           @_current = 0
         else
@@ -417,7 +431,7 @@
         $nav.find('.next').remove()
 
       content = $nav.html()
-      $nav.remove();
+      $nav.remove()
 
       $el.popover({
         placement: step.placement
@@ -426,7 +440,7 @@
         content: content
         html: true
         animation: step.animation
-      });
+      })
 
       popover = $el.data("popover")
       tip     = popover.tip().addClass("bootstrap-tour #{options.name}-step#{i} #{options.step.addClass} #{step.addClass}")
