@@ -57,9 +57,9 @@
       # For event handling only
       # Note: I wish I could add underscore as a dependency (or something else)
       @_evt = $('<div/>')
-      @on   = $.proxy(@_evt.on, @_evt)
-      @off  = $.proxy(@_evt.off, @_evt)
-      @one  = $.proxy(@_evt.one, @_evt)
+      @on   = @_chainable(@_evt.on, @_evt)
+      @off  = @_chainable(@_evt.off, @_evt)
+      @one  = @_chainable(@_evt.one, @_evt)
 
       # Setup persistence
       @persistence = new backend[if @_options.persistence of backend then  @_options.persistence else "Memory"](@_options)
@@ -504,6 +504,10 @@
     # prop: prop to get
     _getProp: (obj, obj2, prop, args...) -> if obj[prop] then @_execOrGet(obj[prop], args...) else @_execOrGet(obj2[prop], args...)
 
+    _chainable:(fn, ctx) ->
+      (args...) =>
+        fn.apply(ctx, args)
+        @
 
     Tour.defaults =
       #
