@@ -542,11 +542,20 @@ test("Tour.prev should return a promise", function() {
 });
 
 test("Tour.end should hide current step and set end state", function() {
+  expect(6);
   this.tour = new Tour();
   this.tour.addStep({
     element: $("<div></div>").appendTo("#qunit-fixture")
   });
   this.tour.start();
+  this.tour.on("end", function(e) {
+    equal(e.step.index, 0);
+    return equal(e.trigger, "api");
+  });
+  this.tour.on("end:step0", function(e) {
+    equal(e.step.index, 0);
+    return equal(e.trigger, "api");
+  });
   this.tour.end();
   strictEqual(this.tour.getStep(0).element.data("popover").tip().filter(":visible").length, 0, "tour hides current step");
   return strictEqual(this.tour._getState("end"), "yes", "tour sets end state");
@@ -699,4 +708,53 @@ test(".initEvent with an element", function() {
     element: $div
   });
   return deepEqual(e.element, $div);
+});
+
+/**
+ * Overlay
+*/
+
+
+test("Should add the div/css for overlay if it was set to true", function() {
+  expect(2);
+  this.tour = new Tour({
+    step: {
+      overlay: true
+    }
+  });
+  this.tour.addStep({
+    element: $("<div id='a'></div>").appendTo("#qunit-fixture")
+  });
+  this.tour.start();
+  equal($('#bootstrap-tour-style').length, 1);
+  this.tour.dispose();
+  return equal($('#bootstrap-tour-style').length, 0);
+});
+
+test("Should not add the div/css for overlay if it was set to false", function() {
+  expect(1);
+  this.tour = new Tour({
+    step: {
+      overlay: false
+    }
+  });
+  return equal($('#bootstrap-tour-style').length, 0);
+});
+
+test("Should display an overlay for the element if it was set to true", function() {
+  expect(2);
+  this.tour = new Tour({
+    step: {
+      overlay: true
+    }
+  });
+  this.tour.addStep({
+    element: $("<div id='a'></div>").appendTo("#qunit-fixture")
+  });
+  this.tour.addStep({
+    element: $("<div id='b'></div>").appendTo("#qunit-fixture")
+  });
+  this.tour.start();
+  ok($('#a').hasClass('bootstrap-tour-expose'), "should have an expose class");
+  return ok($('#bootstrap-tour-overlay').is(':visible'), "overlay should be visible");
 });

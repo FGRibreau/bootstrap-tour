@@ -420,9 +420,18 @@ test "Tour.prev should return a promise", ->
   )
 
 test "Tour.end should hide current step and set end state", ->
+  expect(6)
   @tour = new Tour()
   @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})
   @tour.start()
+  @tour.on("end", (e) ->
+    equal(e.step.index, 0);
+    equal(e.trigger, "api");
+  )
+  @tour.on("end:step0", (e) ->
+    equal(e.step.index, 0);
+    equal(e.trigger, "api");
+  )
   @tour.end()
   strictEqual(@tour.getStep(0).element.data("popover").tip().filter(":visible").length, 0, "tour hides current step")
   strictEqual(@tour._getState("end"), "yes", "tour sets end state")
@@ -526,3 +535,38 @@ test ".initEvent with an element", ->
   $div = $("<div></div>").appendTo("#qunit-fixture")
   e = @tour._initEvent("plop", element:$div)
   deepEqual(e.element, $div)
+
+###*
+ * Overlay
+###
+test "Should add the div/css for overlay if it was set to true", ->
+  expect(2)
+  @tour = new Tour(
+    step:
+      overlay:true
+  )
+  @tour.addStep({element: $("<div id='a'></div>").appendTo("#qunit-fixture")})
+  @tour.start();
+
+  equal($('#bootstrap-tour-style').length, 1)
+  @tour.dispose()
+  equal($('#bootstrap-tour-style').length, 0)
+
+
+test "Should not add the div/css for overlay if it was set to false", ->
+  expect(1)
+  @tour = new Tour(
+    step:
+      overlay:false)
+  equal($('#bootstrap-tour-style').length, 0)
+
+test "Should display an overlay for the element if it was set to true", ->
+  expect(2)
+  @tour = new Tour(
+    step:
+      overlay:true)
+  @tour.addStep({element: $("<div id='a'></div>").appendTo("#qunit-fixture")})
+  @tour.addStep({element: $("<div id='b'></div>").appendTo("#qunit-fixture")})
+  @tour.start()
+  ok($('#a').hasClass('bootstrap-tour-expose'), "should have an expose class")
+  ok($('#bootstrap-tour-overlay').is(':visible'), "overlay should be visible")
