@@ -315,10 +315,7 @@
       $.when.apply($, defs).always(() =>
         $el.css("cursor", "").off("click.tour") if step.reflex
         $el.popover("hide")
-
-        if @_getProp(step, @_options.step, "overlay", step)
-          @_toggleOverlay($el, false)
-
+        @_toggleOverlay($el, false)
         @trigger("hidden", e)
         # @todo resolve should be called only when `hidden` deferred are resolved
         def.resolve()
@@ -469,14 +466,14 @@
 
     _toggleOverlay:($el, display) ->
       @_injectOverlay()
+      $overlay  = $('#bootstrap-tour-overlay')
 
       if !display
-        $('#bootstrap-tour-overlay').fadeOut(300, () ->
-          $el.removeClass('bootstrap-tour-expose').css('z-index','1')
-          $('.popover.bootstrap-tour').removeClass('expose')
-          pos = $el.data('old-pos')
-          $el.css('position', pos).removeData('old-pos') if pos
-        )
+        $el.removeClass('bootstrap-tour-expose').css('z-index','1')
+        pos = $el.data('old-pos')
+        $el.css('position', pos).removeData('old-pos') if pos
+        $('.popover.bootstrap-tour').removeClass('expose')
+        $overlay.hide()
         return
 
       $el.addClass('bootstrap-tour-expose').css('z-index','99999')
@@ -485,10 +482,10 @@
         $el.data('old-pos', pos)
         $el.css('position', 'relative')
       $('.popover.bootstrap-tour').addClass('expose').css('z-index','99999')
-      $('#bootstrap-tour-overlay')
+      $overlay
         .width($(document.body).outerWidth())
-        .height($(document.body).outerHeight())
-        .fadeIn(300)
+        .height(Math.max($(window).height(), $(document.body).outerHeight()))
+        .show()
 
     _injectOverlay: () ->
       return if $('style#bootstrap-tour-style').length > 0
@@ -536,8 +533,7 @@
       tip     = popover.tip().addClass("bootstrap-tour #{options.name}-step#{i} #{options.step.addClass} #{step.addClass}")
       popover.show()
 
-      if @_getProp(step, options.step, "overlay", step)
-        @_toggleOverlay($el, true)
+      @_toggleOverlay($el, @_getProp(step, options.step, "overlay", step))
 
       @_reposition(tip)
       @_scrollIntoView(tip)
