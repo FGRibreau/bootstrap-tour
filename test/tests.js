@@ -426,6 +426,37 @@ test("Tour.addStep with onHide option should run the callback before hiding the 
   return strictEqual(tour_test, 2, "tour runs onHide when step hidden");
 });
 
+test("Tour.addStep with onHide option should wait (if necessary) for `hide` deferred to resolve before hiding the step", function() {
+  var resolved,
+    _this = this;
+  resolved = false;
+  this.tour = new Tour();
+  this.tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture")
+  });
+  this.tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture")
+  });
+  this.tour.on('hide:step0', function(e) {
+    var def,
+      _this = this;
+    def = $.Deferred();
+    setTimeout(function() {
+      resolved = true;
+      return def.resolve();
+    }, 100);
+    return e.setPromise(def.promise());
+  });
+  QUnit.stop();
+  this.tour.on('show:step1', function(e) {
+    QUnit.start();
+    return ok(resolved, "the hide deferred should be resolved before show:step1 is triggered");
+  });
+  return this.tour.start().then(function() {
+    return _this.tour.next();
+  });
+});
+
 test("Tour.getStep should get a step", function() {
   var step;
   this.tour = new Tour();

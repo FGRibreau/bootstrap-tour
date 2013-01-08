@@ -172,7 +172,7 @@
       ) if @_steps
 
       # Remove elements
-      $('.popover, #bootstrap-tour-style, #bootstrap-tour-overlay').remove()
+      $('.popover.bootstrap-tour, #bootstrap-tour-style, #bootstrap-tour-overlay').remove()
       $(document).off("click.bootstrap-tour, keyup.bootstrap-tour")
       # Remove listeners
       @_evt.off()
@@ -237,30 +237,38 @@
 
     # Hide current step and show next step
     # Returns a promise
-    next:(e) ->
+    # (allowed)
+    # e.trigger
+    # e.def
+    next:(e = {}) ->
       def = if e and e.def then e.def else $.Deferred()
-      @hideStep(@_current, e)
-      @showNextStep(def)
+      @hideStep(@_current, trigger:e.trigger).always(() =>
+        @showNextStep(def)
+      )
       def.promise()
 
     # Hide current step and show prev step
     # Returns a promise
     prev:(trigger = "api")->
       def = $.Deferred()
-      @hideStep(@_current, trigger:trigger)
-      @showPrevStep(def)
+      @hideStep(@_current, trigger:trigger).always(() =>
+        @showPrevStep(def)
+      )
       def.promise()
 
     # End tour
     end:(trigger = "api") ->
+      def = $.Deferred()
       step       = @getStep(@_current)
       e          = step:step, trigger:trigger
 
-      @hideStep(@_current, e)
-      @_setState("end", "yes")
-      $(document).off ".bootstrap-tour"
-
-      @trigger("end", e)
+      @hideStep(@_current, e).always(() =>
+        @_setState("end", "yes")
+        $(document).off ".bootstrap-tour"
+        @trigger("end", e)
+        def.resolve()
+      )
+      def.promise()
 
     # Verify if tour is enabled
     ended: ->
@@ -294,22 +302,28 @@
      * Hide the specified step
      * @param  {Number} i  Step index
      * @param  {Event} e   Event
+     * @return {Promise}
      * @optional
     ###
     hideStep: (i, e = {}) ->
+      def = $.Deferred()
       step = e.step = @getStep(i)
       $el  = e.element = @getElement(step.element)
 
-      @trigger("hide", e)
+      defs = []
+      @trigger("hide", $.extend(e, defs:defs))
+      $.when.apply($, defs).always(() =>
+        $el.css("cursor", "").off("click.tour") if step.reflex
+        $el.popover("hide")
 
-      if step.reflex
-        $el.css("cursor", "").off("click.tour")
-      $el.popover("hide")
+        if @_getProp(step, @_options.step, "overlay", step)
+          @_toggleOverlay($el, false)
 
-      if @_getProp(step, @_options.step, "overlay", step)
-        @_toggleOverlay($el, false)
-
-      @trigger("hidden", e)
+        @trigger("hidden", e)
+        # @todo resolve should be called only when `hidden` deferred are resolved
+        def.resolve()
+      )
+      def.promise()
 
     ###*
      * Show the specified step
@@ -376,9 +390,20 @@
       step = @getStep(@_current)
       @showStep(step.prev, def)
 
+    debugMode: (activated) ->
+      @on(evtName, $.proxy(@_debug, @, evtName)) for evtName in ["show", "shown","hide","hidden", "end"]
+
     ###*
      * @module Private API
     ###
+
+    ###*
+     * Debug callback
+     * @param  {[type]} evtName [description]
+     * @param  {[type]} e       [description]
+     * @return {[type]}         [description]
+    ###
+    _debug: (evtName, e) -> console.log(evtName, e.step.index, details:e)
 
     ###*
      * Persist the state
