@@ -2,7 +2,9 @@ var _when;
 
 module("bootstrap-tour", {
   teardown: function() {
-    return this.tour.dispose();
+    if (this.tour) {
+      return this.tour.dispose();
+    }
   }
 });
 
@@ -788,4 +790,55 @@ test("Should display an overlay for the element if it was set to true", function
   this.tour.start();
   ok($('#a').hasClass('bootstrap-tour-expose'), "should have an expose class");
   return ok($('#bootstrap-tour-overlay').is(':visible'), "overlay should be visible");
+});
+
+/**
+ * Private API
+*/
+
+
+test("_getProp handle null obj", function() {
+  expect(2);
+  deepEqual(new Tour()._getProp(null, {}, "template"), null);
+  return deepEqual(new Tour()._getProp({}, null, "template"), null);
+});
+
+test("_getProp should select the right value", function() {
+  var a, b;
+  expect(4);
+  this.tour = new Tour();
+  a = {
+    template: false
+  };
+  b = {};
+  deepEqual(this.tour._getProp(a, b, "template"), false);
+  deepEqual(this.tour._getProp(b, a, "template"), false);
+  a = {
+    template: true
+  };
+  b = {};
+  deepEqual(this.tour._getProp(a, b, "template"), true);
+  return deepEqual(this.tour._getProp(b, a, "template"), true);
+});
+
+test("_getProp should select the right function", function() {
+  var a, b;
+  expect(4);
+  this.tour = new Tour();
+  a = {
+    template: function() {
+      return false;
+    }
+  };
+  b = {};
+  deepEqual(this.tour._getProp(a, b, "template"), false);
+  deepEqual(this.tour._getProp(b, a, "template"), false);
+  a = {
+    template: function() {
+      return true;
+    }
+  };
+  b = {};
+  deepEqual(this.tour._getProp(a, b, "template"), true);
+  return deepEqual(this.tour._getProp(b, a, "template"), true);
 });

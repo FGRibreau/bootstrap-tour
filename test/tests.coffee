@@ -1,6 +1,6 @@
 module("bootstrap-tour",
   teardown: ->
-    @tour.dispose()
+    @tour.dispose() if @tour
 )
 
 
@@ -594,3 +594,35 @@ test "Should display an overlay for the element if it was set to true", ->
   @tour.start()
   ok($('#a').hasClass('bootstrap-tour-expose'), "should have an expose class")
   ok($('#bootstrap-tour-overlay').is(':visible'), "overlay should be visible")
+
+###*
+ * Private API
+###
+test "_getProp handle null obj", ->
+  expect(2)
+  deepEqual(new Tour()._getProp(null, {}, "template"), null)
+  deepEqual(new Tour()._getProp({}, null, "template"), null)
+
+test "_getProp should select the right value", ->
+  expect(4)
+  @tour = new Tour()
+  a = {template:false}
+  b = {}
+  deepEqual(@tour._getProp(a, b, "template"), false)
+  deepEqual(@tour._getProp(b, a, "template"), false)
+  a = {template:true}
+  b = {}
+  deepEqual(@tour._getProp(a, b, "template"), true)
+  deepEqual(@tour._getProp(b, a, "template"), true)
+
+test "_getProp should select the right function", ->
+  expect(4)
+  @tour = new Tour()
+  a = {template:() -> false}
+  b = {}
+  deepEqual(@tour._getProp(a, b, "template"), false)
+  deepEqual(@tour._getProp(b, a, "template"), false)
+  a = {template:() -> true}
+  b = {}
+  deepEqual(@tour._getProp(a, b, "template"), true)
+  deepEqual(@tour._getProp(b, a, "template"), true)

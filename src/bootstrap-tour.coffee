@@ -512,26 +512,27 @@
       if @_getProp(step, options.step, "reflex", step)
         $el.css("cursor", "pointer").on("click.tour", (e) => @next(trigger:'reflex'))
 
-      $nav = $(options.template(step)).wrapAll('<div/>').parent()
+      step.content = @_getPropNotEmpty(step, options.step, "content", step)
+      step.title   = @_getPropNotEmpty(step, options.step, "title", step)
 
-      if step.prev == -1
-        $nav.find('.prev').remove()
-      if step.next == -1
-        $nav.find('.next').remove()
+      $tmpl        = $(@_getProp(step, options.step, "template", step)).wrapAll('<div/>').parent()
 
-      content = $nav.html()
-      $nav.remove()
+      $tmpl.find('.prev').remove() if step.prev == -1
+      $tmpl.find('.next').remove() if step.next == -1
 
       $el.popover({
         placement: step.placement
         trigger: "manual"
-        title: @_getProp(step, options.step, "title", step)
-        content: content
+        template: $tmpl.html()
+        title: step.title or " "
+        content: step.content or " "
         html: true
         animation: step.animation
       })
 
+      $tmpl.remove()
       popover = $el.data("popover")
+
       tip     = popover.tip().addClass("bootstrap-tour #{options.name}-step#{i} #{options.step.addClass} #{step.addClass}")
       popover.show()
 
@@ -636,6 +637,21 @@
         o
 
     ###*
+     * Get the a non `falsy` property `prop` from `obj1` if present or from obj2 otherwise and transfer
+     * arguments `args` if the property is a function
+     * @param  {Object} obj1    First object
+     * @param  {Object} obj2    Second Object
+     * @param  {String} prop    Property name
+     * @param  {Array} args...  Array of arguments
+     * @optional
+     * @ignore
+     * @return {Mixed}
+    ###
+    _getPropNotEmpty:(obj1, obj2, prop, args...) ->
+      test = (o, prop) -> o and o.hasOwnProperty(prop) and !!o[prop]
+      @__getPropFn(test, obj1, obj2, prop, args...)
+
+    ###*
      * Get the a property `prop` from `obj1` if present or from obj2 otherwise and transfer
      * arguments `args` if the property is a function
      * @param  {Object} obj1    First object
@@ -646,7 +662,28 @@
      * @ignore
      * @return {Mixed}
     ###
-    _getProp: (obj1, obj2, prop, args...) -> if obj1[prop] then @_execOrGet(obj1[prop], args...) else @_execOrGet(obj2[prop], args...)
+    _getProp: (obj1, obj2, prop, args...) ->
+      test = (o, prop) -> o and o.hasOwnProperty(prop)
+      @__getPropFn(test, obj1, obj2, prop, args...)
+
+    ###*
+     * Get the a property `prop` from `obj1` if present or from obj2 otherwise and transfer
+     * arguments `args` if the property is a function
+     * @param  {Function} fn    The tester function
+     * @param  {Object} obj1    First object
+     * @param  {Object} obj2    Second Object
+     * @param  {String} prop    Property name
+     * @param  {Array} args...  Array of arguments
+     * @optional
+     * @ignore
+     * @return {Mixed}
+    ###
+    __getPropFn: (fn, obj1, obj2, prop, args...) ->
+      if fn(obj1, prop)
+        @_execOrGet(obj1[prop], args...)
+      else if fn(obj2, prop)
+        @_execOrGet(obj2[prop], args...)
+      else null
 
     ###*
      * Get the value of `val`, it handles the case when `val` is a function
@@ -697,26 +734,6 @@
       ###
       keyboard: true
 
-      ###*
-       * Bootstrap-tour template
-       * @description Navigation template, `.prev`, `.next` and `.end`
-       *              will be removed at runtime if necessary.
-       *              The template can be an underscore template or $.tmpl ...
-       *
-       * @param  {Object} step The step to render
-       * @return {String}      A string containing the HTML that will be injected into the popover
-      ###
-      template:(step) ->
-        """
-          <p>#{step.content}</p>
-          <hr/>
-          <p>
-            <a href="#{step.prev}" class="prev">Previous</a>
-            <a href="#{step.next}" class="next">Next</a>
-            <a href="#" class="pull-right end">End tour</a>
-          </p>
-        """
-
       style:() ->
         """
         .popover.bootstrap-tour.expose{z-index:99998;}
@@ -755,6 +772,30 @@
         # {Boolean} Globally enable the reflex mode, click on the element to continue the tour
         #
         reflex: false
+
+        ###*
+         * Bootstrap-tour template
+         * @description Navigation template, `.prev`, `.next` and `.end`
+         *              will be removed at runtime if necessary.
+         *              The template can be an underscore template or $.tmpl ...
+         *
+         * @param  {Object} step The step to render
+         * @return {String}      A string containing the HTML that will be injected into the popover
+        ###
+        template:(step) ->
+          """
+            <div class="popover">
+              <div class="arrow"></div>
+              <div class="popover-inner"><h3 class="popover-title"></h3>
+                <div class="popover-content"></div>
+                <div class="modal-footer">
+                <a href="#" class="btn end">End tour</a>
+                <a href="#{step.prev}" class="btn pull-right prev">Previous</a>
+                <a href="#{step.next}" class="btn pull-right next">Next</a>
+                </div>
+              </div>
+            </div>
+          """
 
         # #
         # # {Function} Function to execute right before each step is shown.
