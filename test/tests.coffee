@@ -385,6 +385,34 @@ test "Tour.start(true) should force starting a tour that ended", ->
   @tour.start(true)
   strictEqual($(".popover").length, 1, "previously ended tour starts again if forced to")
 
+test "Tour should not go to the next step if .next is disabled", ->
+  @tour = new Tour()
+  @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})
+  @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})
+  @tour.start()
+  equal(@tour._current, 0, "current step should be 0")
+  $('.popover .next').attr('disabled', 'disabled').trigger('click')
+  equal(@tour._current, 0, "current step should still be 0")
+
+test "Tour should not go to the next step if .prev is disabled", ->
+  @tour = new Tour()
+  @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})
+  @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})
+  @tour.start()
+  @tour.next()
+  equal(@tour._current, 1, "current step should be 1")
+  $('.popover .prev').attr('disabled', 'disabled').trigger('click')
+  equal(@tour._current, 1, "current step should still be 1")
+
+test "Tour should not end the tour if .end is disabled", ->
+  @tour = new Tour()
+  @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})
+  @tour.addStep({element: $("<div></div>").appendTo("#qunit-fixture")})
+  @tour.start()
+  equal(@tour.ended(), false, "tour should not be ended")
+  $('.popover .end').attr('disabled', 'disabled').trigger('click')
+  equal(@tour.ended(), false, "tour should not be ended")
+
 test "Tour.next should hide current step and show next step", ->
   expect(2)
   @tour = new Tour()

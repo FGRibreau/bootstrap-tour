@@ -509,6 +509,49 @@ test("Tour.start(true) should force starting a tour that ended", function() {
   return strictEqual($(".popover").length, 1, "previously ended tour starts again if forced to");
 });
 
+test("Tour should not go to the next step if .next is disabled", function() {
+  this.tour = new Tour();
+  this.tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture")
+  });
+  this.tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture")
+  });
+  this.tour.start();
+  equal(this.tour._current, 0, "current step should be 0");
+  $('.popover .next').attr('disabled', 'disabled').trigger('click');
+  return equal(this.tour._current, 0, "current step should still be 0");
+});
+
+test("Tour should not go to the next step if .prev is disabled", function() {
+  this.tour = new Tour();
+  this.tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture")
+  });
+  this.tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture")
+  });
+  this.tour.start();
+  this.tour.next();
+  equal(this.tour._current, 1, "current step should be 1");
+  $('.popover .prev').attr('disabled', 'disabled').trigger('click');
+  return equal(this.tour._current, 1, "current step should still be 1");
+});
+
+test("Tour should not end the tour if .end is disabled", function() {
+  this.tour = new Tour();
+  this.tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture")
+  });
+  this.tour.addStep({
+    element: $("<div></div>").appendTo("#qunit-fixture")
+  });
+  this.tour.start();
+  equal(this.tour.ended(), false, "tour should not be ended");
+  $('.popover .end').attr('disabled', 'disabled').trigger('click');
+  return equal(this.tour.ended(), false, "tour should not be ended");
+});
+
 test("Tour.next should hide current step and show next step", function() {
   var _this = this;
   expect(2);
