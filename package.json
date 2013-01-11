@@ -30,7 +30,10 @@
   "devDependencies": {
     "grunt": "~0.3.15",
     "coffee-script": "~1.4.0",
-    "grunt-coffee": "0.0.6"
+    "grunt-coffee": "0.0.6",
+    "dox": "~0.4.1",
+    "grunt-shell": "~0.1.4",
+    "dox-foundation": "git+https://github.com/FGRibreau/dox-foundation.git#master"
   },
   "keywords": []
 }
