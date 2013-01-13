@@ -1,6 +1,7 @@
 /*global module:false*/
 module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-coffee');
+  grunt.loadNpmTasks('grunt-shell');
 
   // Project configuration.
   grunt.initConfig({
@@ -14,7 +15,7 @@ module.exports = function(grunt) {
     },
     concat: {
       dist: {
-        src: ['<banner:meta.banner>', '<file_strip_banner:src/<%= pkg.name %>.js>'],
+        src: ['<banner:meta.banner>', 'lib/bootstrap-tour.js'],
         dest: 'dist/<%= pkg.name %>.js'
       }
     },
@@ -43,12 +44,24 @@ module.exports = function(grunt) {
         }
       }
     },
+    shell: {
+      dox:{
+        command:'./node_modules/dox/bin/dox < lib/bootstrap-tour.js > docs/api.json',
+        stdout:true,
+        stderr:true
+      },
+      doxx:{//
+        command:'./node_modules/doxx/bin/doxx --template docs/template.jade --source lib --target docs',
+        stdout:true,
+        stderr:true
+      }
+    },
     lint: {
       files: ['grunt.js', 'src/**/*.js']
     },
     watch: {
-      files: ['src/*.coffee', 'test/*.coffee'],
-      tasks: 'coffee:lib coffee:test lint qunit'
+      files: ['docs/*.jade', 'src/*.coffee', 'test/*.coffee'], // lint qunit
+      tasks: 'coffee:lib coffee:test shell:doxx shell:dox'
     },
     jshint: {
       options: {

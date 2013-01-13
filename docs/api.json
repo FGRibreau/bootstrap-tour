@@ -1,0 +1,2228 @@
+[
+  {
+    "tags": [
+      {
+        "type": "ignore",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Bootstrap Tour Extended</p>\n\n<pre><code>Copyright (c) 2013 FG Ribreau (@fgribreau)\nLicensed under the MIT, GPL licenses.\n</code></pre>",
+      "summary": "<p>Bootstrap Tour Extended</p>",
+      "body": "<pre><code>Copyright (c) 2013 FG Ribreau (@fgribreau)\nLicensed under the MIT, GPL licenses.\n</code></pre>"
+    },
+    "isPrivate": false,
+    "ignore": false
+  },
+  {
+    "tags": [
+      {
+        "type": "private",
+        "string": ""
+      },
+      {
+        "type": "ignore",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>(only for CoffeeScript)</p>",
+      "summary": "<p>(only for CoffeeScript)</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "var __slice = [].slice,\n  __hasProp = {}.hasOwnProperty,\n  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };\n\n(function($, window) {\n  var Backend, Cookie, LocalStorage, Memory, Tour, backend, document;\n  document = window.document;\n  Tour = (function() {",
+    "ctx": {
+      "type": "declaration",
+      "name": "__slice",
+      "value": "[].slice,",
+      "string": "__slice"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "options",
+        "description": "An optional option object (see #defaults)"
+      },
+      {
+        "type": "see",
+        "local": "Tour.defaults",
+        "visibility": "Tour.defaults"
+      },
+      {
+        "type": "constructor",
+        "string": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Tour"
+        ],
+        "description": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Create a tour</p>",
+      "summary": "<p>Create a tour</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "function Tour(options) {\n      var _this = this;\n      this._options = $.extend(true, {}, Tour.defaults, options);\n      this._setupEvents();\n      this.persistence = new backend[this._options.persistence in backend ? this._options.persistence : \"Memory\"](this._options);\n      this._steps = [];\n      this._initCurrentStep();\n      this._onresize(function() {\n        if (!_this.ended) {\n          return _this._showStep(_this._current);\n        }\n      });\n    }",
+    "ctx": {
+      "type": "function",
+      "name": "Tour",
+      "string": "Tour()"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Remove the Tour</p>",
+      "summary": "<p>Remove the Tour</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "Tour.prototype.dispose = function() {\n      var _this = this;\n      this._setState(\"current_step\", null);\n      this._setState(\"end\", null);\n      if (this._steps) {\n        $.each(this._steps, function(i, s) {\n          if ((s.element != null) && (s.element.popover != null)) {\n            return s.element.popover(\"hide\").removeData(\"popover\");\n          }\n        });\n      }\n      $('.popover.bootstrap-tour, #bootstrap-tour-style, #bootstrap-tour-overlay').remove();\n      $(document).off(\"click.bootstrap-tour, keyup.bootstrap-tour\");\n      this._evt.off();\n      this.persistence.dispose();\n      if (this._options.step) {\n        $.each(this._options.step, function(k) {\n          return _this._options.step[k] = null;\n        });\n      }\n      return $.each(this._options, function(k) {\n        return _this._options[k] = null;\n      });\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "dispose",
+      "string": "Tour.prototype.dispose()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "step",
+        "description": "An optional object that describe the step (see #stepDefaults)"
+      },
+      {
+        "type": "see",
+        "local": "Tour.stepDefaults",
+        "visibility": "Tour.stepDefaults"
+      }
+    ],
+    "description": {
+      "full": "<p>Add a step to the tour</p>",
+      "summary": "<p>Add a step to the tour</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype.addStep = function(step) {\n      this._steps.push($.extend({}, Tour.stepDefaults, step));\n      return this;\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "addStep",
+      "string": "Tour.prototype.addStep()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Boolean"
+        ],
+        "name": "force",
+        "description": "If force is set to `true` the tour will be forced to start"
+      },
+      {
+        "type": "return",
+        "types": [
+          "Promise"
+        ],
+        "description": "Promise that will be resolved when the step is shown"
+      }
+    ],
+    "description": {
+      "full": "<p>Start tour from current step</p>",
+      "summary": "<p>Start tour from current step</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype.start = function(force) {\n      var def,\n        _this = this;\n      if (force == null) {\n        force = false;\n      }\n      def = $.Deferred();\n      if (this.ended() && !force) {\n        return def.reject(\"Tour ended\").promise();\n      }\n      $(document).off(\"click.bootstrap-tour\", \".popover.bootstrap-tour .next\").on(\"click.bootstrap-tour\", \".popover.bootstrap-tour .next\", function(e) {\n        e.preventDefault();\n        if (!$(e.currentTarget).is(':enabled')) {\n          return;\n        }\n        return _this.next({\n          trigger: 'popover'\n        });\n      });\n      $(document).off(\"click.bootstrap-tour\", \".popover.bootstrap-tour .prev\").on(\"click.bootstrap-tour\", \".popover.bootstrap-tour .prev\", function(e) {\n        e.preventDefault();\n        if (!$(e.currentTarget).is(':enabled')) {\n          return;\n        }\n        return _this.prev({\n          trigger: 'popover'\n        });\n      });\n      $(document).off(\"click.bootstrap-tour\", \".popover.bootstrap-tour .end\").on(\"click.bootstrap-tour\", \".popover.bootstrap-tour .end\", function(e) {\n        e.preventDefault();\n        if (!$(e.currentTarget).is(':enabled')) {\n          return;\n        }\n        return _this.end({\n          trigger: 'popover'\n        });\n      });\n      this._setupKeyboardNavigation();\n      this._showStep(this._current, def);\n      return def.promise();\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "start",
+      "string": "Tour.prototype.start()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Number"
+        ],
+        "name": "index",
+        "description": "Step index"
+      },
+      {
+        "type": "return",
+        "types": [
+          "Deferred"
+        ],
+        "description": "The deferred will be resolved when the step `index` will be shown"
+      }
+    ],
+    "description": {
+      "full": "<p>Goto a step by its index</p>",
+      "summary": "<p>Goto a step by its index</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype.gotoStep = function(index) {\n      return this._when(this._mapTimes(index, this.next), this);\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "gotoStep",
+      "string": "Tour.prototype.gotoStep()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "event",
+        "description": "A string containing one Bootstrap-tour event types, it can be \"hide\", \"hidden\", \"show\", \"shown\" or \"skip\". Each event can have a `:step{index}` path appended. For instance the event \"shown:step0\" will be triggered when the first step will be shown on screen."
+      },
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "selector",
+        "description": "A selector string to filter the descendants of the selected elements that trigger the event."
+      },
+      {
+        "type": "optional",
+        "string": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "data",
+        "description": "Data to be passed to the handler in event.data when an event is triggered."
+      },
+      {
+        "type": "optional",
+        "string": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "handler",
+        "description": "A function to execute when the event is triggered."
+      }
+    ],
+    "description": {
+      "full": "<p>Attach an event handler function for one event.</p>",
+      "summary": "<p>Attach an event handler function for one event.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype.on = function(event, selector, data, handler) {};",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "on",
+      "string": "Tour.prototype.on()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "name",
+        "description": "A string containing one Bootstrap-tour event types, such as \"hide\", \"hidden\", \"show\", \"shown\" or \"skip\"."
+      },
+      {
+        "type": "param",
+        "types": [
+          "Mixed"
+        ],
+        "name": "data",
+        "description": "Data to be passed to the handler in `event.data` when an event is triggered."
+      },
+      {
+        "type": "optional",
+        "string": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "handler",
+        "description": "A function to execute at the time the event is triggered."
+      },
+      {
+        "type": "optional",
+        "string": ""
+      },
+      {
+        "type": "see:",
+        "string": "#on"
+      }
+    ],
+    "description": {
+      "full": "<p>Attach a handler to an event. The handler is executed at most once.</p>",
+      "summary": "<p>Attach a handler to an event. The handler is executed at most once.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype.one = function(event, data, handler) {};",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "one",
+      "string": "Tour.prototype.one()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "event",
+        "description": "Event name"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "handler",
+        "description": "A handler function previously attached for the event(s), or the special value false."
+      }
+    ],
+    "description": {
+      "full": "<p>Remove an event handler.</p>",
+      "summary": "<p>Remove an event handler.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype.off = function(event, handler) {};",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "off",
+      "string": "Tour.prototype.off()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "name",
+        "description": "Event name (e.g. \"show\", \"shown\", \"hide\", \"hidden\", \"skip\")"
+      },
+      {
+        "type": "optional",
+        "string": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "e",
+        "description": "Event object"
+      }
+    ],
+    "description": {
+      "full": "<p>Trigger an event on <code>Tour</code></p>",
+      "summary": "<p>Trigger an event on <code>Tour</code></p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype.trigger = function(name, e) {\n      if (e == null) {\n        e = {};\n      }\n      this._evt.triggerHandler(this._initEvent(name, e));\n      if (e.step) {\n        return this._evt.triggerHandler(this._initEvent(\"\" + name + \":step\" + e.step.index, e));\n      }\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "trigger",
+      "string": "Tour.prototype.trigger()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "(optional)",
+        "description": "Event object"
+      },
+      {
+        "type": "return",
+        "types": [
+          "Promise"
+        ],
+        "description": "The promise will be resolved when the next step will be shown"
+      }
+    ],
+    "description": {
+      "full": "<p>Hide current step and show next step</p>",
+      "summary": "<p>Hide current step and show next step</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype.next = function(e) {\n      var def,\n        _this = this;\n      if (e == null) {\n        e = {};\n      }\n      def = e && e.def ? e.def : $.Deferred();\n      this._hideStep(this._current, {\n        trigger: e.trigger\n      }).always(function() {\n        return _this._showNextStep(def);\n      });\n      return def.promise();\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "next",
+      "string": "Tour.prototype.next()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "(optional)",
+        "description": "Event object"
+      },
+      {
+        "type": "return",
+        "types": [
+          "Promise"
+        ],
+        "description": "The promise will be resolved when the previous step will be shown"
+      }
+    ],
+    "description": {
+      "full": "<p>Hide current step and show previous step</p>",
+      "summary": "<p>Hide current step and show previous step</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype.prev = function(trigger) {\n      var def,\n        _this = this;\n      if (trigger == null) {\n        trigger = \"api\";\n      }\n      def = $.Deferred();\n      this._hideStep(this._current, {\n        trigger: trigger\n      }).always(function() {\n        return _this._showPrevStep(def);\n      });\n      return def.promise();\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "prev",
+      "string": "Tour.prototype.prev()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "(optional)",
+        "description": "trigger"
+      },
+      {
+        "type": "return",
+        "types": [
+          "Promise"
+        ],
+        "description": "The promise will be resolved when the tour ended"
+      }
+    ],
+    "description": {
+      "full": "<p>End the tour</p>",
+      "summary": "<p>End the tour</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype.end = function(trigger) {\n      var def, e, step,\n        _this = this;\n      if (trigger == null) {\n        trigger = \"api\";\n      }\n      def = $.Deferred();\n      step = this._getStep(this._current);\n      e = {\n        step: step,\n        trigger: trigger\n      };\n      this._hideStep(this._current, e).always(function() {\n        _this._setState(\"end\", \"yes\");\n        $(document).off(\".bootstrap-tour\");\n        _this.trigger(\"end\", e);\n        return def.resolve();\n      });\n      return def.promise();\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "end",
+      "string": "Tour.prototype.end()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "return",
+        "types": [
+          "Boolean"
+        ],
+        "description": "true if the tour is ended"
+      }
+    ],
+    "description": {
+      "full": "<p>Verify if tour is enabled</p>",
+      "summary": "<p>Verify if tour is enabled</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype.ended = function() {\n      return !!this._getState(\"end\");\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "ended",
+      "string": "Tour.prototype.ended()"
+    }
+  },
+  {
+    "tags": [],
+    "description": {
+      "full": "<p>Restart the tour</p>",
+      "summary": "<p>Restart the tour</p>",
+      "body": ""
+    },
+    "ignore": false,
+    "code": "Tour.prototype.restart = function() {\n      this._setState(\"current_step\", null);\n      this._setState(\"end\", null);\n      this._setCurrentStep(0);\n      return this.start();\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "restart",
+      "string": "Tour.prototype.restart()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Boolean"
+        ],
+        "name": "activated",
+        "description": "If true, all `Tour` emitted events will be displayed in console"
+      }
+    ],
+    "description": {
+      "full": "<p>Switch debug mode</p>",
+      "summary": "<p>Switch debug mode</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype.debugMode = function(activated) {\n      var evtName, _i, _len, _ref, _results;\n      _ref = [\"show\", \"shown\", \"hide\", \"hidden\", \"end\"];\n      _results = [];\n      for (_i = 0, _len = _ref.length; _i < _len; _i++) {\n        evtName = _ref[_i];\n        _results.push(this.on(evtName, $.proxy(this._debug, this, evtName)));\n      }\n      return _results;\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "debugMode",
+      "string": "Tour.prototype.debugMode()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Number"
+        ],
+        "name": "i",
+        "description": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Object"
+        ],
+        "description": ""
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Get a step by its indice</p>",
+      "summary": "<p>Get a step by its indice</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._getStep = function(i) {\n      if (this._steps[i] != null) {\n        return $.extend(this._steps[i], {\n          index: i,\n          next: i === this._steps.length - 1 ? -1 : i + 1,\n          prev: i - 1\n        });\n      }\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_getStep",
+      "string": "Tour.prototype._getStep()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Mixed"
+        ],
+        "name": "el",
+        "description": "element"
+      },
+      {
+        "type": "return",
+        "types": [
+          "jQuery"
+        ],
+        "description": "a jQuery object"
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Returns an element</p>",
+      "summary": "<p>Returns an element</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._getElement = function(el) {\n      if (typeof el === 'function') {\n        el = el();\n      }\n      if (!el) {\n        return $();\n      }\n      if (el instanceof jQuery) {\n        return el;\n      }\n      return $(el);\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_getElement",
+      "string": "Tour.prototype._getElement()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Deferred"
+        ],
+        "name": "def",
+        "description": "the deferred will be resolved when the step is shown"
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Show the next step</p>",
+      "summary": "<p>Show the next step</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._showNextStep = function(def) {\n      var step;\n      step = this._getStep(this._current);\n      return this._showStep(step.next, def);\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_showNextStep",
+      "string": "Tour.prototype._showNextStep()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Deferred"
+        ],
+        "name": "def",
+        "description": "the deferred will be resolved when the step is shown"
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Show the previous step</p>",
+      "summary": "<p>Show the previous step</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._showPrevStep = function(def) {\n      var step;\n      step = this._getStep(this._current);\n      return this._showStep(step.prev, def);\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_showPrevStep",
+      "string": "Tour.prototype._showPrevStep()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Number"
+        ],
+        "name": "i",
+        "description": "Step index"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Deferred"
+        ],
+        "name": "def",
+        "description": "A deferred that will be resolved when the popover will be shown or reject if the step was not found"
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Show the specified step</p>",
+      "summary": "<p>Show the specified step</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._showStep = function(i, def) {\n      var defs, step,\n        _this = this;\n      step = this._getStep(i);\n      if (!step) {\n        if (def) {\n          def.reject(\"Step \" + i + \" undefined\");\n        }\n        return;\n      }\n      this._setCurrentStep(i);\n      if (step.path !== \"\" && document.location.pathname !== step.path && document.location.pathname.replace(/^.*[\\\\\\/]/, '') !== step.path) {\n        debugger;\n        document.location.href = step.path;\n        return;\n      }\n      defs = [];\n      this.trigger(\"show\", {\n        step: step,\n        element: false,\n        defs: defs\n      });\n      return $.when.apply($, defs).always(function() {\n        var $el;\n        $el = _this._getElement(step.element);\n        if ($el.length === 0 || !$el.is(\":visible\")) {\n          _this.trigger(\"skip\", {\n            element: $el,\n            step: step\n          });\n          _this.next({\n            def: def\n          });\n          return;\n        }\n        _this._showPopover(step, i);\n        _this.trigger(\"shown\", {\n          step: step,\n          element: $el\n        });\n        if (def) {\n          return def.resolve();\n        }\n      });\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_showStep",
+      "string": "Tour.prototype._showStep()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Number"
+        ],
+        "name": "i",
+        "description": "Step index"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Event"
+        ],
+        "name": "e",
+        "description": "Event"
+      },
+      {
+        "type": "return",
+        "types": [
+          "Promise"
+        ],
+        "description": ""
+      },
+      {
+        "type": "optional",
+        "string": ""
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Hide the specified step</p>",
+      "summary": "<p>Hide the specified step</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._hideStep = function(i, e) {\n      var $el, def, defs, step,\n        _this = this;\n      if (e == null) {\n        e = {};\n      }\n      def = $.Deferred();\n      step = e.step = this._getStep(i);\n      $el = e.element = this._getElement(step.element);\n      defs = [];\n      this.trigger(\"hide\", $.extend(e, {\n        defs: defs\n      }));\n      $.when.apply($, defs).always(function() {\n        if (step.reflex) {\n          $el.css(\"cursor\", \"\").off(\"click.tour\");\n        }\n        $el.popover(\"hide\");\n        _this._toggleOverlay($el, false);\n        _this.trigger(\"hidden\", e);\n        return def.resolve();\n      });\n      return def.promise();\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_hideStep",
+      "string": "Tour.prototype._hideStep()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "[type]"
+        ],
+        "name": "evtName",
+        "description": "[description]"
+      },
+      {
+        "type": "param",
+        "types": [
+          "[type]"
+        ],
+        "name": "e",
+        "description": "[description]"
+      },
+      {
+        "type": "return",
+        "types": [
+          "[type]"
+        ],
+        "description": "[description]"
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Debug callback</p>",
+      "summary": "<p>Debug callback</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._debug = function(evtName, e) {\n      return console.log(evtName, e.step.index, {\n        details: e\n      });\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_debug",
+      "string": "Tour.prototype._debug()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "key",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Mixed"
+        ],
+        "name": "value",
+        "description": ""
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Persist the state</p>",
+      "summary": "<p>Persist the state</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._setState = function(key, value) {\n      return this.persistence.setState(this._options, key, value);\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_setState",
+      "string": "Tour.prototype._setState()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "key",
+        "description": ""
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Get the persisted state</p>",
+      "summary": "<p>Get the persisted state</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._getState = function(key) {\n      var value;\n      value = this.persistence.getState(this._options, key);\n      return value;\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_getState",
+      "string": "Tour.prototype._getState()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Init the current step variable</p>",
+      "summary": "<p>Init the current step variable</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._initCurrentStep = function() {\n      this._current = this._getState(\"current_step\");\n      if (!this._current || this._current === \"null\") {\n        return this._current = 0;\n      } else {\n        return this._current = parseInt(this._current, 10);\n      }\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_initCurrentStep",
+      "string": "Tour.prototype._initCurrentStep()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Number"
+        ],
+        "name": "stepIndex",
+        "description": ""
+      },
+      {
+        "type": "ignore",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Set and persist the current step</p>",
+      "summary": "<p>Set and persist the current step</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._setCurrentStep = function(stepIndex) {\n      this._current = stepIndex;\n      return this._setState(\"current_step\", stepIndex);\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_setCurrentStep",
+      "string": "Tour.prototype._setCurrentStep()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "return",
+        "types": [
+          "[type]"
+        ],
+        "description": "[description]"
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>[_setupEvents description]</p>",
+      "summary": "<p>[_setupEvents description]</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._setupEvents = function() {\n      this._evt = $('<div/>');\n      this.on = this._chainable(this._evt.on, this._evt);\n      this.off = this._chainable(this._evt.off, this._evt);\n      return this.one = this._chainable(this._evt.one, this._evt);\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_setupEvents",
+      "string": "Tour.prototype._setupEvents()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "description",
+        "string": "The augmented jQuery Event object contains:"
+      },
+      {
+        "type": "",
+        "string": "* `{String}` `trigger`: `api | popover | reflex | keyboard`"
+      },
+      {
+        "type": "",
+        "string": "* `{Object}` `step`: the current step"
+      },
+      {
+        "type": "",
+        "string": "* `{jQuery}` `element`: the current step element"
+      },
+      {
+        "type": "",
+        "string": "* `{Function}` `setPromise(promise)`: set the"
+      },
+      {
+        "type": "",
+        "string": "Note that `onShow` Event does not provides the `element` attribute use `onShown` instead)"
+      },
+      {
+        "type": "private",
+        "string": ""
+      },
+      {
+        "type": "see",
+        "local": "Tour.event",
+        "visibility": "Tour.event"
+      },
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "name",
+        "description": "Event name"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "opt",
+        "description": "Event attributes"
+      },
+      {
+        "type": "optional",
+        "string": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "jQuery.Event"
+        ],
+        "description": "Augmented jQuery.Event"
+      }
+    ],
+    "description": {
+      "full": "<p>Create a new (augmented) jQuery Event</p>",
+      "summary": "<p>Create a new (augmented) jQuery Event</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._initEvent = function(name, opt) {\n      var defs, e, step;\n      if (name == null) {\n        name = \"\";\n      }\n      if (opt == null) {\n        opt = {};\n      }\n      e = jQuery.Event(name);\n      $.extend(e, opt);\n      if (e.defs) {\n        defs = e.defs;\n        e.setPromise = function(promise) {\n          return defs.push(promise);\n        };\n        delete e.defs;\n      }\n      if (!e.trigger) {\n        e.trigger = \"api\";\n      }\n      if (!e.step) {\n        step = e.step = this._getStep(this._current);\n      }\n      if (name === \"show\" || name.indexOf(\"show:\") === 0) {\n        delete e.element;\n      } else if (step) {\n        e.element = this._getElement(step.element);\n      }\n      return e;\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_initEvent",
+      "string": "Tour.prototype._initEvent()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "[type]"
+        ],
+        "name": "$el",
+        "description": "[description]"
+      },
+      {
+        "type": "param",
+        "types": [
+          "[type]"
+        ],
+        "name": "display",
+        "description": "[description]"
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Toggle the overlay</p>",
+      "summary": "<p>Toggle the overlay</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._toggleOverlay = function($el, display) {\n      var $overlay, pos;\n      this._injectOverlay();\n      $overlay = $('#bootstrap-tour-overlay');\n      if (!display) {\n        $el.removeClass('bootstrap-tour-expose').css('z-index', '1');\n        pos = $el.data('old-pos');\n        if (pos) {\n          $el.css('position', pos).removeData('old-pos');\n        }\n        $('.popover.bootstrap-tour').removeClass('expose');\n        $overlay.hide();\n        return;\n      }\n      $el.addClass('bootstrap-tour-expose').css('z-index', '99999');\n      pos = $el.css('position');\n      if (pos !== 'absolute') {\n        $el.data('old-pos', pos);\n        $el.css('position', 'relative');\n      }\n      $('.popover.bootstrap-tour').addClass('expose').css('z-index', '99999');\n      return $overlay.width($(document.body).outerWidth()).height(Math.max($(window).height(), $(document.body).outerHeight())).show();\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_toggleOverlay",
+      "string": "Tour.prototype._toggleOverlay()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "private",
+        "string": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "[type]"
+        ],
+        "description": "[description]"
+      }
+    ],
+    "description": {
+      "full": "<p>Inject the overlay</p>",
+      "summary": "<p>Inject the overlay</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._injectOverlay = function() {\n      if ($('style#bootstrap-tour-style').length > 0) {\n        return;\n      }\n      $(\"<style id='bootstrap-tour-style' type='text/css'>\" + (this._options.style()) + \"</style>\").appendTo('head');\n      return $(\"<div id='bootstrap-tour-overlay'></div>\").appendTo('body');\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_injectOverlay",
+      "string": "Tour.prototype._injectOverlay()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "private",
+        "string": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "step",
+        "description": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Number"
+        ],
+        "name": "i",
+        "description": "step number"
+      }
+    ],
+    "description": {
+      "full": "<p>Show step popover</p>",
+      "summary": "<p>Show step popover</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._showPopover = function(step, i) {\n      var $el, $tmpl, options, popover, tip,\n        _this = this;\n      $el = this._getElement(step.element);\n      options = $.extend(true, {}, this._options);\n      step.content = this._getProp(step, options.step, \"content\", step);\n      if (step.options) {\n        $.extend(options, step.options);\n      }\n      if (this._getProp(step, options.step, \"reflex\", step)) {\n        $el.css(\"cursor\", \"pointer\").on(\"click.tour\", function(e) {\n          return _this.next({\n            trigger: 'reflex'\n          });\n        });\n      }\n      step.content = this._getPropNotEmpty(step, options.step, \"content\", step);\n      step.title = this._getPropNotEmpty(step, options.step, \"title\", step);\n      $tmpl = $(this._getProp(step, options.step, \"template\", step)).wrapAll('<div/>').parent();\n      if (step.prev === -1) {\n        $tmpl.find('.prev').remove();\n      }\n      if (step.next === -1) {\n        $tmpl.find('.next').remove();\n      }\n      $el.popover({\n        placement: step.placement,\n        trigger: \"manual\",\n        template: $tmpl.html(),\n        title: step.title || \" \",\n        content: step.content || \" \",\n        html: true,\n        animation: step.animation\n      });\n      $tmpl.remove();\n      popover = $el.data(\"popover\");\n      tip = popover.tip().addClass(\"bootstrap-tour \" + options.name + \"-step\" + i + \" \" + options.step.addClass + \" \" + step.addClass);\n      popover.show();\n      this._toggleOverlay($el, this._getProp(step, options.step, \"overlay\", step));\n      this._reposition(tip);\n      return this._scrollIntoView(tip);\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_showPopover",
+      "string": "Tour.prototype._showPopover()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "jQuery"
+        ],
+        "name": "tip",
+        "description": "popover tip"
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Prevent popups from crossing over the edge of the window</p>",
+      "summary": "<p>Prevent popups from crossing over the edge of the window</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._reposition = function(tip) {\n      var offsetBottom, offsetRight, tipOffset;\n      tipOffset = tip.offset();\n      offsetBottom = $(document).outerHeight() - tipOffset.top - $(tip).outerHeight();\n      if (offsetBottom < 0) {\n        tipOffset.top = tipOffset.top + offsetBottom;\n      }\n      offsetRight = $(document).outerWidth() - tipOffset.left - $(tip).outerWidth();\n      if (offsetRight < 0) {\n        tipOffset.left = tipOffset.left + offsetRight;\n      }\n      if (tipOffset.top < 0) {\n        tipOffset.top = 0;\n      }\n      if (tipOffset.left < 0) {\n        tipOffset.left = 0;\n      }\n      return tip.offset(tipOffset);\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_reposition",
+      "string": "Tour.prototype._reposition()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "jQuery"
+        ],
+        "name": "tip",
+        "description": "popover tip"
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Scroll to the popup if it is not in the viewport</p>",
+      "summary": "<p>Scroll to the popup if it is not in the viewport</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._scrollIntoView = function(tip) {\n      var tipRect;\n      tipRect = tip.get(0).getBoundingClientRect();\n      if (!(tipRect.top > 0 && tipRect.bottom < $(window).height() && tipRect.left > 0 && tipRect.right < $(window).width())) {\n        return tip.get(0).scrollIntoView(true);\n      }\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_scrollIntoView",
+      "string": "Tour.prototype._scrollIntoView()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "private",
+        "string": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "fn",
+        "description": "Callback function"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Number"
+        ],
+        "name": "timeout",
+        "description": "How much time to wait after the last `resize` event before firing fn"
+      }
+    ],
+    "description": {
+      "full": "<p>When the user resize the window</p>",
+      "summary": "<p>When the user resize the window</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._onresize = function(fn, timeout) {\n      return $(window).resize(function() {\n        clearTimeout(timeout);\n        return timeout = setTimeout(fn, 100);\n      });\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_onresize",
+      "string": "Tour.prototype._onresize()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Activate if necessary the keyboard navigation</p>",
+      "summary": "<p>Activate if necessary the keyboard navigation</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._setupKeyboardNavigation = function() {\n      if (!this._options.keyboard) {\n        return;\n      }\n      return $(document).on(\"keyup.bootstrap-tour\", $.proxy(this._onKeyUp, this));\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_setupKeyboardNavigation",
+      "string": "Tour.prototype._setupKeyboardNavigation()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Event"
+        ],
+        "name": "e",
+        "description": "jQuery event"
+      },
+      {
+        "type": "todo",
+        "string": "Handle escape key -> end the tour"
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>When the key is up</p>",
+      "summary": "<p>When the key is up</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._onKeyUp = function(e) {\n      var step;\n      if (!e.which) {\n        return;\n      }\n      step = this._getStep(this._current);\n      if (!step) {\n        return;\n      }\n      switch (e.which) {\n        case 39:\n          e.preventDefault();\n          if (step.next !== -1 && this._current < this._steps.length - 1) {\n            return this.next({\n              trigger: \"keyboard\"\n            });\n          }\n          break;\n        case 37:\n          e.preventDefault();\n          if (step.prev !== -1 && this._current > 0) {\n            return this.prev({\n              trigger: \"keyboard\"\n            });\n          }\n      }\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_onKeyUp",
+      "string": "Tour.prototype._onKeyUp()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Array"
+        ],
+        "name": "arr",
+        "description": "an array of function that return a promise"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "ctx",
+        "description": "context"
+      },
+      {
+        "type": "private",
+        "string": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Deferred"
+        ],
+        "description": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Execute sequentially the array of function</p>",
+      "summary": "<p>Execute sequentially the array of function</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._when = function(arr, ctx) {\n      var def, next;\n      def = $.Deferred();\n      next = function() {\n        var fn;\n        fn = arr.shift();\n        if (!fn) {\n          return def.resolve();\n        }\n        return fn.call(ctx).then(next);\n      };\n      next();\n      return def.promise();\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_when",
+      "string": "Tour.prototype._when()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "private",
+        "string": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "[type]"
+        ],
+        "name": "times",
+        "description": "[description]"
+      },
+      {
+        "type": "param",
+        "types": [
+          "[type]"
+        ],
+        "name": "ipt",
+        "description": "[description]"
+      },
+      {
+        "type": "return",
+        "types": [
+          "[type]"
+        ],
+        "description": "[description]"
+      }
+    ],
+    "description": {
+      "full": "<p>Returns an array of <code>ipt</code> <code>times</code> times</p>",
+      "summary": "<p>Returns an array of <code>ipt</code> <code>times</code> times</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._mapTimes = function(times, ipt) {\n      var o;\n      o = [];\n      while (times--) {\n        o.push(ipt);\n      }\n      return o;\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_mapTimes",
+      "string": "Tour.prototype._mapTimes()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "obj1",
+        "description": "First object"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "obj2",
+        "description": "Second Object"
+      },
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "prop",
+        "description": "Property name"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Array"
+        ],
+        "name": "args...",
+        "description": "Array of arguments"
+      },
+      {
+        "type": "optional",
+        "string": ""
+      },
+      {
+        "type": "private",
+        "string": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Mixed"
+        ],
+        "description": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Get the a non <code>falsy</code> property <code>prop</code> from <code>obj1</code> if present or from obj2 otherwise and transfer<br />arguments <code>args</code> if the property is a function</p>",
+      "summary": "<p>Get the a non <code>falsy</code> property <code>prop</code> from <code>obj1</code> if present or from obj2 otherwise and transfer<br />arguments <code>args</code> if the property is a function</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._getPropNotEmpty = function() {\n      var args, obj1, obj2, prop, test;\n      obj1 = arguments[0], obj2 = arguments[1], prop = arguments[2], args = 4 <= arguments.length ? __slice.call(arguments, 3) : [];\n      test = function(o, prop) {\n        return o && o.hasOwnProperty(prop) && !!o[prop];\n      };\n      return this.__getPropFn.apply(this, [test, obj1, obj2, prop].concat(__slice.call(args)));\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_getPropNotEmpty",
+      "string": "Tour.prototype._getPropNotEmpty()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "obj1",
+        "description": "First object"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "obj2",
+        "description": "Second Object"
+      },
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "prop",
+        "description": "Property name"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Array"
+        ],
+        "name": "args...",
+        "description": "Array of arguments"
+      },
+      {
+        "type": "optional",
+        "string": ""
+      },
+      {
+        "type": "private",
+        "string": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Mixed"
+        ],
+        "description": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Get the a property <code>prop</code> from <code>obj1</code> if present or from obj2 otherwise and transfer<br />arguments <code>args</code> if the property is a function</p>",
+      "summary": "<p>Get the a property <code>prop</code> from <code>obj1</code> if present or from obj2 otherwise and transfer<br />arguments <code>args</code> if the property is a function</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._getProp = function() {\n      var args, obj1, obj2, prop, test;\n      obj1 = arguments[0], obj2 = arguments[1], prop = arguments[2], args = 4 <= arguments.length ? __slice.call(arguments, 3) : [];\n      test = function(o, prop) {\n        return o && o.hasOwnProperty(prop);\n      };\n      return this.__getPropFn.apply(this, [test, obj1, obj2, prop].concat(__slice.call(args)));\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_getProp",
+      "string": "Tour.prototype._getProp()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "fn",
+        "description": "The tester function"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "obj1",
+        "description": "First object"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "obj2",
+        "description": "Second Object"
+      },
+      {
+        "type": "param",
+        "types": [
+          "String"
+        ],
+        "name": "prop",
+        "description": "Property name"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Array"
+        ],
+        "name": "args...",
+        "description": "Array of arguments"
+      },
+      {
+        "type": "optional",
+        "string": ""
+      },
+      {
+        "type": "private",
+        "string": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Mixed"
+        ],
+        "description": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Get the a property <code>prop</code> from <code>obj1</code> if present or from obj2 otherwise and transfer<br />arguments <code>args</code> if the property is a function</p>",
+      "summary": "<p>Get the a property <code>prop</code> from <code>obj1</code> if present or from obj2 otherwise and transfer<br />arguments <code>args</code> if the property is a function</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype.__getPropFn = function() {\n      var args, fn, obj1, obj2, prop;\n      fn = arguments[0], obj1 = arguments[1], obj2 = arguments[2], prop = arguments[3], args = 5 <= arguments.length ? __slice.call(arguments, 4) : [];\n      if (fn(obj1, prop)) {\n        return this._execOrGet.apply(this, [obj1[prop]].concat(__slice.call(args)));\n      } else if (fn(obj2, prop)) {\n        return this._execOrGet.apply(this, [obj2[prop]].concat(__slice.call(args)));\n      } else {\n        return null;\n      }\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "__getPropFn",
+      "string": "Tour.prototype.__getPropFn()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Mixed"
+        ],
+        "name": "val",
+        "description": "Value"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Array"
+        ],
+        "name": "arg",
+        "description": "Array of arguments"
+      },
+      {
+        "type": "optional",
+        "string": ""
+      },
+      {
+        "type": "private",
+        "string": ""
+      },
+      {
+        "type": "return",
+        "types": [
+          "Mixed"
+        ],
+        "description": "`val` value"
+      }
+    ],
+    "description": {
+      "full": "<p>Get the value of <code>val</code>, it handles the case when <code>val</code> is a function</p>",
+      "summary": "<p>Get the value of <code>val</code>, it handles the case when <code>val</code> is a function</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._execOrGet = function() {\n      var args, val;\n      val = arguments[0], args = 2 <= arguments.length ? __slice.call(arguments, 1) : [];\n      if ($.isFunction(val)) {\n        return val.apply(null, args);\n      } else {\n        return val;\n      }\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_execOrGet",
+      "string": "Tour.prototype._execOrGet()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "param",
+        "types": [
+          "Function"
+        ],
+        "name": "fn",
+        "description": "function"
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "ctx",
+        "description": "Context"
+      },
+      {
+        "type": "return",
+        "types": [
+          "Function"
+        ],
+        "description": "Chainable function that returns the current Tour instance"
+      },
+      {
+        "type": "private",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Make a function chainable inside <code>Tour</code></p>",
+      "summary": "<p>Make a function chainable inside <code>Tour</code></p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.prototype._chainable = function(fn, ctx) {\n      var _this = this;\n      return function() {\n        var args;\n        args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];\n        fn.apply(ctx, args);\n        return _this;\n      };\n    };",
+    "ctx": {
+      "type": "method",
+      "constructor": "Tour",
+      "cons": "Tour",
+      "name": "_chainable",
+      "string": "Tour.prototype._chainable()"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "Object"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p><code>Tour</code> constructor <code>option</code> defaults</p>",
+      "summary": "<p><code>Tour</code> constructor <code>option</code> defaults</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.defaults = {",
+    "ctx": {
+      "type": "property",
+      "receiver": "Tour",
+      "name": "defaults",
+      "value": "{",
+      "string": "Tour.defaults"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "description",
+        "string": "This option is used to build the name of the cookie where the tour state is stored. You can initialize several tours with different names in the same page and application."
+      },
+      {
+        "type": "type",
+        "types": [
+          "String"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>name</p>",
+      "summary": "<p>name</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "name: \"tour\","
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "String"
+        ]
+      },
+      {
+        "type": "description",
+        "string": "The value can be \"Cookie\" | \"LocalStorage\" | \"Memory\" (default \"Memory\")"
+      },
+      {
+        "type": "",
+        "string": "Note: the \"Cookie\" backend requires jquery.cookie.js"
+      }
+    ],
+    "description": {
+      "full": "<p>How to handle persistence</p>",
+      "summary": "<p>How to handle persistence</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "persistence: \"Memory\","
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "Boolean"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Keyboard navigation</p>",
+      "summary": "<p>Keyboard navigation</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "keyboard: true,"
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "Function"
+        ]
+      },
+      {
+        "type": "return",
+        "types": [
+          "String"
+        ],
+        "description": "css code that will be injected if `overlay` is used"
+      }
+    ],
+    "description": {
+      "full": "<p>Specify a function that return a css string</p>",
+      "summary": "<p>Specify a function that return a css string</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "style: function() {\n        return \".popover.bootstrap-tour.expose{z-index:99998;}\\n#bootstrap-tour-overlay{background:rgba(0,0,0,0.5);display:none;width:100%;height:100%;position:absolute; top:0; left:0; z-index:99997;}\";\n      },"
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "Object"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<h1>Global step parameters</h1>\n\n<p>Each of the following parameters can be overriden at <strong>each</strong> step level.</p>",
+      "summary": "<h1>Global step parameters</h1>",
+      "body": "<p>Each of the following parameters can be overriden at <strong>each</strong> step level.</p>"
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "step: {"
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "String",
+          "Function(step)"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Default step title</p>",
+      "summary": "<p>Default step title</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "title: null,"
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "String",
+          "Function(step)"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Default step content</p>",
+      "summary": "<p>Default step content</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "content: null,"
+  },
+  {
+    "tags": [
+      {
+        "type": "description",
+        "string": "Note: if `addClass` is defined at the step level."
+      },
+      {
+        "type": "",
+        "string": "The two defined `addClass` will be taken into account in the popover"
+      },
+      {
+        "type": "type",
+        "types": [
+          "String"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Css class to add to the .popover element</p>",
+      "summary": "<p>Css class to add to the .popover element</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "addClass: \"\","
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "Boolean"
+        ]
+      },
+      {
+        "type": "todo",
+        "string": "Handle Bootstrap modal, pull requests are welcome !"
+      }
+    ],
+    "description": {
+      "full": "<p>Globally enable an overlay for each step element, <code>true</code> if activated, <code>false</code> otherwise</p>",
+      "summary": "<p>Globally enable an overlay for each step element, <code>true</code> if activated, <code>false</code> otherwise</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "overlay: false,"
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "Boolean"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Globally enable the reflex mode, click on the element to continue the tour</p>",
+      "summary": "<p>Globally enable the reflex mode, click on the element to continue the tour</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "reflex: false,"
+  },
+  {
+    "tags": [
+      {
+        "type": "description",
+        "string": "The template should contain `.prev`, `.next` and `.end`"
+      },
+      {
+        "type": "",
+        "string": "will be removed at runtime by Bootstrap Tour if necessary."
+      },
+      {
+        "type": "",
+        "string": "The template function can be an underscore template or $.tmpl ..."
+      },
+      {
+        "type": "",
+        "string": ""
+      },
+      {
+        "type": "param",
+        "types": [
+          "Object"
+        ],
+        "name": "step",
+        "description": "The step to render"
+      },
+      {
+        "type": "type",
+        "types": [
+          "Function"
+        ]
+      },
+      {
+        "type": "return",
+        "types": [
+          "String"
+        ],
+        "description": "A string containing the HTML that will be injected into the popover"
+      }
+    ],
+    "description": {
+      "full": "<p>Bootstrap Tour step-wide template</p>",
+      "summary": "<p>Bootstrap Tour step-wide template</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "template: function(step) {\n          return \"<div class=\\\"popover\\\">\\n  <div class=\\\"arrow\\\"></div>\\n  <div class=\\\"popover-inner\\\"><h3 class=\\\"popover-title\\\"></h3>\\n    <div class=\\\"popover-content\\\"></div>\\n    <div class=\\\"modal-footer\\\">\\n    <a href=\\\"#\\\" class=\\\"btn end\\\">End tour</a>\\n    <a href=\\\"\" + step.prev + \"\\\" class=\\\"btn pull-right prev\\\">Previous</a>\\n    <a href=\\\"\" + step.next + \"\\\" class=\\\"btn pull-right next\\\">Next</a>\\n    </div>\\n  </div>\\n</div>\";\n        }\n      }\n    };"
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "Object"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>addStep default parameters</p>",
+      "summary": "<p>addStep default parameters</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Tour.stepDefaults = {",
+    "ctx": {
+      "type": "property",
+      "receiver": "Tour",
+      "name": "stepDefaults",
+      "value": "{",
+      "string": "Tour.stepDefaults"
+    }
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "String"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Path to the page on which the step should be shown. this allows you<br />to build tours that span several pages!</p>",
+      "summary": "<p>Path to the page on which the step should be shown. this allows you<br />to build tours that span several pages!</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "path: \"\","
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "jQuery-object",
+          "Css-Selector",
+          "Function()"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>HTML element on which the step popover should be shown.</p>",
+      "summary": "<p>HTML element on which the step popover should be shown.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "element: null,"
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "String"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>How to position the popover - top | bottom | left | right.</p>",
+      "summary": "<p>How to position the popover - top | bottom | left | right.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "placement: \"right\","
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "String",
+          "Function(step)"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Step title</p>",
+      "summary": "<p>Step title</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "title: \"\","
+  },
+  {
+    "tags": [
+      {
+        "type": "description",
+        "string": "Note: defining `step.title` and `step.content` functions at the tour level"
+      },
+      {
+        "type": "",
+        "string": "allow the developper to separate step title/content from the step behaviour."
+      },
+      {
+        "type": "type",
+        "types": [
+          "String",
+          "Function(step)"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Step content</p>",
+      "summary": "<p>Step content</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "content: \"\","
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "Boolean"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Apply a css fade transition to the tooltip.</p>",
+      "summary": "<p>Apply a css fade transition to the tooltip.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "animation: true,"
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "Boolean"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Enable the reflex mode, click on the element to continue the tour</p>",
+      "summary": "<p>Enable the reflex mode, click on the element to continue the tour</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "reflex: false,"
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "String"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Css class to add to the .popover element for this step only</p>",
+      "summary": "<p>Css class to add to the .popover element for this step only</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "addClass: \"\""
+  },
+  {
+    "tags": [
+      {
+        "type": "ignore",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>...</p>",
+      "summary": "<p>...</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "};\n\n    return Tour;\n\n  })();"
+  },
+  {
+    "tags": [
+      {
+        "type": "ignore",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Ignore backends</p>",
+      "summary": "<p>Ignore backends</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Backend = (function() {\n\n    function Backend() {}\n\n    Backend.prototype.dispose = function() {};\n\n    Backend.prototype.setState = function(options, key, value) {};\n\n    Backend.prototype.getState = function(options, key) {};\n\n    return Backend;\n\n  })();\n  Memory = (function(_super) {\n\n    __extends(Memory, _super);\n\n    function Memory(options) {\n      this.ns = \"__db_\" + options.name + \"__\";\n      window[this.ns] = {};\n    }\n\n    Memory.prototype._avail = function() {\n      return window.hasOwnProperty(this.ns);\n    };\n\n    Memory.prototype.setState = function(options, key, value) {\n      if (!this._avail()) {\n        return;\n      }\n      return window[this.ns][key] = value;\n    };\n\n    Memory.prototype.getState = function(options, key) {\n      if (!this._avail()) {\n        return;\n      }\n      return window[this.ns][key] || null;\n    };\n\n    Memory.prototype.dispose = function() {\n      return delete window[this.ns];\n    };\n\n    return Memory;\n\n  })(Backend);\n  Cookie = (function(_super) {\n\n    __extends(Cookie, _super);\n\n    function Cookie(options) {\n      this.ns = \"\" + options.name + \"_\";\n    }\n\n    Cookie.prototype.setState = function(options, key, value) {\n      return $.cookie(\"\" + this.ns + key, value, {\n        expires: 36500,\n        path: '/'\n      });\n    };\n\n    Cookie.prototype.getState = function(options, key) {\n      return $.cookie(\"\" + this.ns + key);\n    };\n\n    return Cookie;\n\n  })(Backend);\n  LocalStorage = (function(_super) {\n\n    __extends(LocalStorage, _super);\n\n    function LocalStorage(options) {\n      this.ns = \"\" + options.name + \"_\";\n    }\n\n    LocalStorage.prototype.setState = function(options, key, value) {\n      return window.localStorage.setItem(\"\" + this.ns + key, JSON.stringify(value));\n    };\n\n    LocalStorage.prototype.getState = function(options, key) {\n      var item;\n      item = null;\n      try {\n        item = window.localStorage.getItem(\"\" + this.ns + key);\n        return JSON.parse(item);\n      } catch (err) {\n        console.error(err, item);\n        return null;\n      }\n    };\n\n    return LocalStorage;\n\n  })(Backend);\n  backend = {\n    Memory: Memory,\n    Cookie: Cookie,\n    LocalStorage: LocalStorage\n  };\n  return window.Tour = Tour;\n})(jQuery, window);"
+  }
+]

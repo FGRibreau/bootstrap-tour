@@ -1,16 +1,922 @@
-### ============================================================
-# bootstrap-tour.js v0.1
-# http://sorich87.github.com/bootstrap-tour/
-# ==============================================================
-#
-# Copyright (c) 2013 FG Ribreau
-# Licensed under the MIT, GPL licenses.
+###*
+ * Bootstrap Tour Extended
+ *
+ *     Copyright (c) 2013 FG Ribreau (@fgribreau)
+ *     Licensed under the MIT, GPL licenses.
+ * @ignore
 ###
 
+###*
+ * (only for CoffeeScript)
+ * @private
+ * @ignore
+###
 (($, window) ->
   document = window.document
 
+  class Tour
+
+    ###*
+     * Create a tour
+     * @param  {Object} options An optional option object (see #defaults)
+     * @see Tour.defaults
+     * @constructor
+     * @return {Tour}
+    ###
+    constructor: (options) ->
+      @_options = $.extend(true, {}, Tour.defaults, options)
+
+      # Step on/off/one
+      @_setupEvents()
+
+      # Setup persistence
+      @persistence = new backend[if @_options.persistence of backend then  @_options.persistence else "Memory"](@_options)
+
+      @_steps = []
+      @_initCurrentStep()
+
+      # Reshow popover on window resize using debounced resize
+      @_onresize(=> @_showStep(@_current) unless @ended)
+
+    ###*
+     * Remove the Tour
+    ###
+    dispose:() ->
+      @_setState("current_step", null)
+      @_setState("end", null)
+
+      $.each(@_steps, (i, s) ->
+        if s.element? && s.element.popover?
+          s.element.popover("hide").removeData("popover")
+      ) if @_steps
+
+      # Remove elements
+      $('.popover.bootstrap-tour, #bootstrap-tour-style, #bootstrap-tour-overlay').remove()
+      $(document).off("click.bootstrap-tour, keyup.bootstrap-tour")
+      # Remove listeners
+      @_evt.off()
+      # Clean persistence
+      @persistence.dispose()
+
+      $.each(@_options.step, (k) => @_options.step[k] = null)  if @_options.step
+      $.each(@_options, (k) => @_options[k] = null)
+
+
+    ###*
+     * Add a step to the tour
+     * @param {Object} step An optional object that describe the step  (see #stepDefaults)
+     * @see  Tour.stepDefaults
+    ###
+    addStep: (step) ->
+      @_steps.push $.extend({}, Tour.stepDefaults, step)
+      @
+
+
+    ###*
+     * Start tour from current step
+     * @param  {Boolean} force If force is set to `true` the tour will be forced to start
+     * @return {Promise}       Promise that will be resolved when the step is shown
+    ###
+    start: (force = false) ->
+      def = $.Deferred()
+      return def.reject("Tour ended").promise() if @ended() && !force
+
+      # Go to next step after click on element with class .next
+      $(document).off("click.bootstrap-tour",".popover.bootstrap-tour .next").on "click.bootstrap-tour", ".popover.bootstrap-tour .next", (e) =>
+        e.preventDefault()
+        return if not $(e.currentTarget).is(':enabled')
+        @next(trigger:'popover')
+
+      # Go to previous step after click on element with class .prev
+      $(document).off("click.bootstrap-tour",".popover.bootstrap-tour .prev").on "click.bootstrap-tour", ".popover.bootstrap-tour .prev", (e) =>
+        e.preventDefault()
+        return if not $(e.currentTarget).is(':enabled')
+        @prev(trigger:'popover')
+
+      # End tour after click on element with class .end
+      $(document).off("click.bootstrap-tour",".popover.bootstrap-tour .end").on "click.bootstrap-tour", ".popover.bootstrap-tour .end", (e) =>
+        e.preventDefault()
+        return if not $(e.currentTarget).is(':enabled')
+        @end(trigger:'popover')
+
+      @_setupKeyboardNavigation()
+      @_showStep(@_current, def)
+      def.promise()
+
+    ###*
+     * Goto a step by its index
+     * @param  {Number} index Step index
+     * @return {Deferred}     The deferred will be resolved when the step `index` will be shown
+    ###
+    gotoStep: (index) -> @_when @_mapTimes(index, @.next), @
+
+    ###*
+     * Attach an event handler function for one event.
+     * @param  {String}   event    A string containing one Bootstrap-tour event types, it can be "hide", "hidden", "show", "shown" or "skip". Each event can have a `:step{index}` path appended. For instance the event "shown:step0" will be triggered when the first step will be shown on screen.
+     * @param  {String}   selector A selector string to filter the descendants of the selected elements that trigger the event.
+     * @optional
+     * @param  {String}   data     Data to be passed to the handler in event.data when an event is triggered.
+     * @optional
+     * @param  {Function} handler  A function to execute when the event is triggered.
+    ###
+    on:(event, selector, data, handler) ->
+
+    ###*
+     * Attach a handler to an event. The handler is executed at most once.
+     * @param {String} name      A string containing one Bootstrap-tour event types, such as "hide", "hidden", "show", "shown" or "skip".
+     * @param {Mixed}  data      Data to be passed to the handler in `event.data` when an event is triggered.
+     * @optional
+     * @param {Function} handler A function to execute at the time the event is triggered.
+     * @optional
+     * see: #on
+    ###
+    one:(event, data, handler) ->
+
+    ###*
+     * Remove an event handler.
+     * @param  {String} event     Event name
+     * @param  {Function} handler A handler function previously attached for the event(s), or the special value false.
+    ###
+    off:(event, handler) ->
+
+    ###*
+     * Trigger an event on `Tour`
+     * @param  {String} name Event name (e.g. "show", "shown", "hide", "hidden", "skip")
+     * @optional
+     * @param {Object} e Event object
+    ###
+    trigger:(name, e = {}) ->
+      @_evt.triggerHandler(@_initEvent(name, e))
+      @_evt.triggerHandler(@_initEvent("#{name}:step#{e.step.index}", e)) if e.step
+
+    ###*
+     * Hide current step and show next step
+     * @param  {Object} (optional) Event object
+     * @return {Promise} The promise will be resolved when the next step will be shown
+    ###
+    next:(e = {}) ->
+      def = if e and e.def then e.def else $.Deferred()
+      @_hideStep(@_current, trigger:e.trigger).always(() =>
+        @_showNextStep(def)
+      )
+      def.promise()
+
+    ###*
+     * Hide current step and show previous step
+     * @param  {Object} (optional) Event object
+     * @return {Promise} The promise will be resolved when the previous step will be shown
+    ###
+    prev:(trigger = "api")->
+      def = $.Deferred()
+      @_hideStep(@_current, trigger:trigger).always(() =>
+        @_showPrevStep(def)
+      )
+      def.promise()
+
+    ###*
+     * End the tour
+     * @param  {String} (optional) trigger
+     * @return {Promise} The promise will be resolved when the tour ended
+    ###
+    end:(trigger = "api") ->
+      def = $.Deferred()
+      step       = @_getStep(@_current)
+      e          = step:step, trigger:trigger
+
+      @_hideStep(@_current, e).always(() =>
+        @_setState("end", "yes")
+        $(document).off ".bootstrap-tour"
+        @trigger("end", e)
+        def.resolve()
+      )
+      def.promise()
+
+    ###*
+     * Verify if tour is enabled
+     * @return {Boolean} true if the tour is ended
+    ###
+    ended: ->
+      !!@_getState("end")
+
+
+    ###*
+     * Restart the tour
+    ###
+    restart: ->
+      @_setState("current_step", null)
+      @_setState("end", null)
+      @_setCurrentStep(0)
+      @start()
+
+
+    ###*
+     * Switch debug mode
+     * @param  {Boolean} activated If true, all `Tour` emitted events will be displayed in console
+    ###
+    debugMode: (activated) ->
+      @on(evtName, $.proxy(@_debug, @, evtName)) for evtName in ["show", "shown","hide","hidden", "end"]
+
+    ###*
+     * Get a step by its indice
+     * @param  {Number} i
+     * @return {Object}
+     * @private
+    ###
+    _getStep: (i) ->
+      $.extend(@_steps[i], {
+        index: i
+
+        #
+        # {Number} Index of the step to show after this one, starting from 0 for the
+        # first step of the tour. -1 to not show the link to next step.
+        # By default, the next step (in the order you added them) will be shown.
+        #
+        next: if i == @_steps.length - 1 then -1 else i + 1
+
+        #
+        # {Number} Index of the step to show before this one, starting from 0 for
+        # the first step of the tour. -1 to not show the link to previous step.
+        # By default, the previous step (in the order you added them) will be shown.
+        #
+        prev: i - 1
+      }) if @_steps[i]?
+
+    ###*
+     * Returns an element
+     * @param  {Mixed} el element
+     * @return {jQuery}      a jQuery object
+     * @private
+    ###
+    _getElement: (el) ->
+      if typeof el is 'function'
+        el = el()
+      if !el
+        return $()
+      if el instanceof jQuery
+        return el
+      return $(el)
+
+    ###*
+     * Show the next step
+     * @param  {Deferred} def the deferred will be resolved when the step is shown
+     * @private
+    ###
+    _showNextStep: (def) ->
+      step = @_getStep(@_current)
+      @_showStep(step.next, def)
+
+    ###*
+     * Show the previous step
+     * @param  {Deferred} def the deferred will be resolved when the step is shown
+     * @private
+    ###
+    _showPrevStep: (def) ->
+      step = @_getStep(@_current)
+      @_showStep(step.prev, def)
+
+    ###*
+     * Show the specified step
+     * @param  {Number} i     Step index
+     * @param  {Deferred} def A deferred that will be resolved when the popover will be shown or reject if the step was not found
+     * @private
+    ###
+    _showStep: (i, def) ->
+      step = @_getStep(i)
+
+      unless step
+        def.reject("Step #{i} undefined") if def
+        return
+
+      @_setCurrentStep(i)
+
+      # Redirect to step path if not already there
+      # Compare to path, then filename
+      if step.path != "" && document.location.pathname != step.path && document.location.pathname.replace(/^.*[\\\/]/, '') != step.path
+        debugger
+        document.location.href = step.path
+        return
+
+      defs = []
+      @trigger("show", step:step, element:false, defs:defs)
+
+      $.when.apply($, defs).always(() =>
+        $el = @_getElement(step.element)
+
+        # If step element is hidden or does not exist, skip step
+        if $el.length is 0 or not $el.is(":visible")
+          @trigger("skip", element:$el, step:step)
+          @next(def:def)
+          return
+
+        # Show popover
+        @_showPopover(step, i)
+        @trigger("shown", step:step, element:$el)
+
+        def.resolve() if def
+      )
+
+    ###*
+     * Hide the specified step
+     * @param  {Number} i  Step index
+     * @param  {Event} e   Event
+     * @return {Promise}
+     * @optional
+     * @private
+    ###
+    _hideStep: (i, e = {}) ->
+      def = $.Deferred()
+      step = e.step = @_getStep(i)
+      $el  = e.element = @_getElement(step.element)
+
+      defs = []
+      @trigger("hide", $.extend(e, defs:defs))
+      $.when.apply($, defs).always(() =>
+        $el.css("cursor", "").off("click.tour") if step.reflex
+        $el.popover("hide")
+        @_toggleOverlay($el, false)
+        @trigger("hidden", e)
+        # @todo resolve should be called only when `hidden` deferred are resolved
+        def.resolve()
+      )
+      def.promise()
+
+
+
+    ###*
+     * Debug callback
+     * @param  {[type]} evtName [description]
+     * @param  {[type]} e       [description]
+     * @return {[type]}         [description]
+     * @private
+    ###
+    _debug: (evtName, e) -> console.log(evtName, e.step.index, details:e)
+
+    ###*
+     * Persist the state
+     * @param {String} key
+     * @param {Mixed} value
+     * @private
+    ###
+    _setState: (key, value) ->
+      @persistence.setState(@_options, key, value)
+
+
+    ###*
+     * Get the persisted state
+     * @param {String} key
+     * @private
+    ###
+    _getState: (key) ->
+      value = @persistence.getState(@_options, key)
+      return value
+
+    ###*
+     * Init the current step variable
+     * @private
+    ###
+    _initCurrentStep:() ->
+      @_current = @_getState("current_step")
+      if not @_current or @_current is "null"
+        @_current = 0
+      else
+        @_current = parseInt(@_current, 10)
+
+    ###*
+     * Set and persist the current step
+     * @param {Number} stepIndex
+     * @ignore
+    ###
+    _setCurrentStep: (stepIndex) ->
+      @_current = stepIndex
+      @_setState("current_step", stepIndex)
+
+
+    ###*
+     * [_setupEvents description]
+     * @return {[type]} [description]
+     * @private
+    ###
+    _setupEvents: () ->
+      # Note: I wish I could add underscore as a dependency (or something else)
+      @_evt = $('<div/>')
+      @on   = @_chainable(@_evt.on, @_evt)
+      @off  = @_chainable(@_evt.off, @_evt)
+      @one  = @_chainable(@_evt.one, @_evt)
+
+    ###*
+     * Create a new (augmented) jQuery Event
+     *
+     * @description The augmented jQuery Event object contains:
+     *  * `{String}` `trigger`:               `api | popover | reflex | keyboard`
+     *  * `{Object}` `step`:                  the current step
+     *  * `{jQuery}` `element`:               the current step element
+     *  * `{Function}` `setPromise(promise)`: set the
+     *  Note that `onShow` Event does not provides the `element` attribute use `onShown` instead)
+     * @private
+     * @see Tour.event
+     * @param  {String} name  Event name
+     * @param  {Object} opt   Event attributes
+     * @optional
+     * @return {jQuery.Event} Augmented jQuery.Event
+    ###
+    _initEvent: (name = "", opt = {}) ->
+      e = jQuery.Event(name)
+      $.extend(e, opt)
+
+      if e.defs
+        defs = e.defs
+        e.setPromise = (promise) -> defs.push(promise)
+        delete e.defs
+
+      e.trigger = "api" if !e.trigger
+      step = e.step = @_getStep(@_current) if !e.step
+      if name == "show" or name.indexOf("show:") == 0
+        delete e.element
+      else if step
+        e.element = @_getElement(step.element)
+      e
+
+    ###*
+     * Toggle the overlay
+     * @param  {[type]} $el     [description]
+     * @param  {[type]} display [description]
+     * @private
+    ###
+    _toggleOverlay:($el, display) ->
+      @_injectOverlay()
+      $overlay  = $('#bootstrap-tour-overlay')
+
+      if !display
+        $el.removeClass('bootstrap-tour-expose').css('z-index','1')
+        pos = $el.data('old-pos')
+        $el.css('position', pos).removeData('old-pos') if pos
+        $('.popover.bootstrap-tour').removeClass('expose')
+        $overlay.hide()
+        return
+
+      $el.addClass('bootstrap-tour-expose').css('z-index','99999')
+      pos = $el.css('position')
+      if pos isnt 'absolute'
+        $el.data('old-pos', pos)
+        $el.css('position', 'relative')
+      $('.popover.bootstrap-tour').addClass('expose').css('z-index','99999')
+      $overlay
+        .width($(document.body).outerWidth())
+        .height(Math.max($(window).height(), $(document.body).outerHeight()))
+        .show()
+
+    ###*
+     * Inject the overlay
+     * @private
+     * @return {[type]} [description]
+    ###
+    _injectOverlay: () ->
+      return if $('style#bootstrap-tour-style').length > 0
+      $("<style id='bootstrap-tour-style' type='text/css'>#{@_options.style()}</style>").appendTo('head')
+      $("<div id='bootstrap-tour-overlay'></div>").appendTo('body')
+
+    ###*
+     * Show step popover
+     * @private
+     * @param  {Object} step
+     * @param  {Number} i    step number
+    ###
+    _showPopover: (step, i) ->
+      $el          = @_getElement(step.element)
+      options      = $.extend true, {}, @_options
+      step.content = @_getProp(step, options.step, "content", step)
+
+      if step.options
+        $.extend options, step.options
+
+      if @_getProp(step, options.step, "reflex", step)
+        $el.css("cursor", "pointer").on("click.tour", (e) => @next(trigger:'reflex'))
+
+      step.content = @_getPropNotEmpty(step, options.step, "content", step)
+      step.title   = @_getPropNotEmpty(step, options.step, "title", step)
+
+      $tmpl        = $(@_getProp(step, options.step, "template", step)).wrapAll('<div/>').parent()
+
+      $tmpl.find('.prev').remove() if step.prev == -1
+      $tmpl.find('.next').remove() if step.next == -1
+
+      $el.popover({
+        placement: step.placement
+        trigger: "manual"
+        template: $tmpl.html()
+        title: step.title or " "
+        content: step.content or " "
+        html: true
+        animation: step.animation
+      })
+
+      $tmpl.remove()
+      popover = $el.data("popover")
+
+      tip     = popover.tip().addClass("bootstrap-tour #{options.name}-step#{i} #{options.step.addClass} #{step.addClass}")
+      popover.show()
+
+      @_toggleOverlay($el, @_getProp(step, options.step, "overlay", step))
+
+      @_reposition(tip)
+      @_scrollIntoView(tip)
+
+    ###*
+     * Prevent popups from crossing over the edge of the window
+     * @param  {jQuery} tip popover tip
+     * @private
+    ###
+    _reposition: (tip) ->
+      tipOffset = tip.offset()
+      offsetBottom = $(document).outerHeight() - tipOffset.top - $(tip).outerHeight()
+      tipOffset.top = tipOffset.top + offsetBottom if offsetBottom < 0
+      offsetRight = $(document).outerWidth() - tipOffset.left - $(tip).outerWidth()
+      tipOffset.left = tipOffset.left + offsetRight if offsetRight < 0
+
+      tipOffset.top = 0 if tipOffset.top < 0
+      tipOffset.left = 0 if tipOffset.left < 0
+      tip.offset(tipOffset)
+
+    ###*
+     * Scroll to the popup if it is not in the viewport
+     * @param  {jQuery} tip popover tip
+     * @private
+    ###
+    _scrollIntoView: (tip) ->
+      tipRect = tip.get(0).getBoundingClientRect()
+      unless tipRect.top > 0 && tipRect.bottom < $(window).height() && tipRect.left > 0 && tipRect.right < $(window).width()
+        tip.get(0).scrollIntoView(true)
+
+    ###*
+     * When the user resize the window
+     * @private
+     * @param  {Function} fn      Callback function
+     * @param  {Number}   timeout How much time to wait after the last `resize` event before firing fn
+    ###
+    _onresize: (fn, timeout) ->
+      $(window).resize ->
+        clearTimeout(timeout)
+        timeout = setTimeout(fn, 100)
+
+    ###*
+     * Activate if necessary the keyboard navigation
+     * @private
+    ###
+    _setupKeyboardNavigation: ->
+      return if not @_options.keyboard
+      $(document).on "keyup.bootstrap-tour", $.proxy(@_onKeyUp, @)
+
+    ###*
+     * When the key is up
+     * @param  {Event} e jQuery event
+     * @todo Handle escape key -> end the tour
+     * @private
+    ###
+    _onKeyUp: (e) ->
+      return unless e.which
+      step = @_getStep(@_current)
+      return if not step
+      switch e.which
+        # next
+        when 39
+          e.preventDefault()
+          if step.next != -1 and @_current < @_steps.length - 1
+            @next(trigger:"keyboard")
+        # prev
+        when 37
+          e.preventDefault()
+          if step.prev != -1 and @_current > 0
+            @prev(trigger:"keyboard")
+
+    ###*
+     * Execute sequentially the array of function
+     * @param  {Array} arr  an array of function that return a promise
+     * @param  {Object} ctx context
+     * @private
+     * @return {Deferred}
+    ###
+    _when: (arr, ctx) ->
+      def = $.Deferred()
+      next = ->
+        fn = arr.shift()
+        return def.resolve()  unless fn
+        fn.call(ctx).then next
+      next()
+      def.promise()
+
+
+    ###*
+     * Returns an array of `ipt` `times` times
+     * @private
+     * @param  {[type]} times [description]
+     * @param  {[type]} ipt   [description]
+     * @return {[type]}       [description]
+    ###
+    _mapTimes: (times, ipt) ->
+        o = []
+        while times--
+          o.push ipt
+        o
+
+    ###*
+     * Get the a non `falsy` property `prop` from `obj1` if present or from obj2 otherwise and transfer
+     * arguments `args` if the property is a function
+     *
+     * @param  {Object} obj1    First object
+     * @param  {Object} obj2    Second Object
+     * @param  {String} prop    Property name
+     * @param  {Array} args...  Array of arguments
+     * @optional
+     * @private
+     * @return {Mixed}
+    ###
+    _getPropNotEmpty:(obj1, obj2, prop, args...) ->
+      test = (o, prop) -> o and o.hasOwnProperty(prop) and !!o[prop]
+      @__getPropFn(test, obj1, obj2, prop, args...)
+
+    ###*
+     * Get the a property `prop` from `obj1` if present or from obj2 otherwise and transfer
+     * arguments `args` if the property is a function
+     * @param  {Object} obj1    First object
+     * @param  {Object} obj2    Second Object
+     * @param  {String} prop    Property name
+     * @param  {Array} args...  Array of arguments
+     * @optional
+     * @private
+     * @return {Mixed}
+    ###
+    _getProp: (obj1, obj2, prop, args...) ->
+      test = (o, prop) -> o and o.hasOwnProperty(prop)
+      @__getPropFn(test, obj1, obj2, prop, args...)
+
+    ###*
+     * Get the a property `prop` from `obj1` if present or from obj2 otherwise and transfer
+     * arguments `args` if the property is a function
+     * @param  {Function} fn    The tester function
+     * @param  {Object} obj1    First object
+     * @param  {Object} obj2    Second Object
+     * @param  {String} prop    Property name
+     * @param  {Array} args...  Array of arguments
+     * @optional
+     * @private
+     * @return {Mixed}
+    ###
+    __getPropFn: (fn, obj1, obj2, prop, args...) ->
+      if fn(obj1, prop)
+        @_execOrGet(obj1[prop], args...)
+      else if fn(obj2, prop)
+        @_execOrGet(obj2[prop], args...)
+      else null
+
+    ###*
+     * Get the value of `val`, it handles the case when `val` is a function
+     * @param  {Mixed} val Value
+     * @param  {Array} arg Array of arguments
+     * @optional
+     * @private
+     * @return {Mixed}     `val` value
+    ###
+    _execOrGet: (val, args...) -> if $.isFunction(val) then val(args...) else val
+
+    ###*
+     * Make a function chainable inside `Tour`
+     * @param  {Function} fn  function
+     * @param  {Object}   ctx Context
+     * @return {Function}     Chainable function that returns the current Tour instance
+     * @private
+    ###
+    _chainable:(fn, ctx) ->
+      (args...) =>
+        fn.apply(ctx, args)
+        @
+
+    ###*
+     * `Tour` constructor `option` defaults
+     * @type {Object} defaults
+    ###
+    Tour.defaults =
+
+      ###*
+       * name
+       *
+       * @description  This option is used to build the name of the cookie where the tour state is stored. You can initialize several tours with different names in the same page and application.
+       * @type {String} name
+      ###
+      name: "tour"
+
+      ###*
+       * How to handle persistence
+       *
+       * @type {String} Backend name
+       * @description The value can be "Cookie" | "LocalStorage" | "Memory" (default "Memory")
+       *              Note: the "Cookie" backend requires jquery.cookie.js
+      ###
+      persistence: "Memory"
+
+      ###*
+       * Keyboard navigation
+       * @type {Boolean} keyboard true if activated, false otherwise
+      ###
+      keyboard: true
+
+      ###*
+       * Specify a function that return a css string
+       * @type   {Function}
+       * @return {String} css code that will be injected if `overlay` is used
+      ###
+      style:() ->
+        """
+        .popover.bootstrap-tour.expose{z-index:99998;}
+        #bootstrap-tour-overlay{background:rgba(0,0,0,0.5);display:none;width:100%;height:100%;position:absolute; top:0; left:0; z-index:99997;}
+        """
+
+      ###*
+       * # Global step parameters
+       *
+       * Each of the following parameters can be overriden at **each** step level.
+       * @type {Object}
+      ###
+      step:
+        ###*
+         * Default step title
+         * @type {String|Function(step)}
+        ###
+        title:null
+
+        ###*
+         * Default step content
+         * @type {String|Function(step)}
+        ###
+        content:null
+
+
+        ###*
+         * Css class to add to the .popover element
+         * @description Note: if `addClass` is defined at the step level.
+         *              The two defined `addClass` will be taken into account in the popover
+         * @type {String}
+        ###
+        addClass:""
+
+        ###*
+         * Globally enable an overlay for each step element, `true` if activated, `false` otherwise
+         * @type {Boolean}
+         * @todo Handle Bootstrap modal, pull requests are welcome !
+        ###
+        overlay: false
+
+
+        ###*
+         * Globally enable the reflex mode, click on the element to continue the tour
+         * @type {Boolean}
+        ###
+        reflex: false
+
+        ###*
+         * Bootstrap Tour step-wide template
+         * @description The template should contain `.prev`, `.next` and `.end`
+         *              will be removed at runtime by Bootstrap Tour if necessary.
+         *              The template function can be an underscore template or $.tmpl ...
+         *
+         * @param  {Object} step The step to render
+         * @type   {Function}
+         * @return {String}      A string containing the HTML that will be injected into the popover
+        ###
+        template:(step) ->
+          """
+            <div class="popover">
+              <div class="arrow"></div>
+              <div class="popover-inner"><h3 class="popover-title"></h3>
+                <div class="popover-content"></div>
+                <div class="modal-footer">
+                <a href="#" class="btn end">End tour</a>
+                <a href="#{step.prev}" class="btn pull-right prev">Previous</a>
+                <a href="#{step.next}" class="btn pull-right next">Next</a>
+                </div>
+              </div>
+            </div>
+          """
+
+        # #
+        # # {Function} Function to execute right before each step is shown.
+        # # If onShow returns a promise (see $.Deferred() documentation), Bootstrap-tour will wait until
+        # # completition of the promise before displaying the popover
+        # #
+        # # Note: if `onShow` is defined at the step level, the two defined `onShow`
+        # # callbacks will be taken into account in the step.
+        # onShow: (tour, event) ->
+
+        # #
+        # #  {Function} Function to execute right after each step is shown.
+        # #
+        # # Note: if `onShown` is defined at the step level, the two defined `onShown`
+        # # callbacks will be taken into account in the step.
+        # onShown: (tour, event) ->
+
+        # #
+        # # {Function} Function to execute right before each step is hidden.
+        # #
+        # # Note: if `onHide` is defined at the step level, the two defined `onHide`
+        # # callbacks will be taken into account in the step.
+        # onHide: (tour, event) ->
+
+        # #
+        # # {Function} Function to execute on end
+        # #
+        # # Note: if `onEnd` is defined at the step level, the two defined `onEnd`
+        # # callbacks will be taken into account in the step.
+        # onEnd: (tour, event) ->
+
+    ###*
+     * addStep default parameters
+     * @type {Object}
+    ###
+    Tour.stepDefaults =
+      ###*
+       * Path to the page on which the step should be shown. this allows you
+       * to build tours that span several pages!
+       * @type {String}
+      ###
+      path: ""
+
+      ###*
+       * HTML element on which the step popover should be shown.
+       * @type {jQuery-object|Css-Selector|Function()}
+      ###
+      element:null
+
+      ###*
+       * How to position the popover - top | bottom | left | right.
+       * @type {String}
+      ###
+      placement: "right"
+
+      ###*
+       * Step title
+       * @type {String|Function(step)}
+      ###
+      title: ""
+
+      ###*
+       * Step content
+       * @description Note: defining `step.title` and `step.content` functions at the tour level
+       *              allow the developper to separate step title/content from the step behaviour.
+       * @type {String|Function(step)}
+      ###
+      content: ""
+
+      ###*
+       * Apply a css fade transition to the tooltip.
+       * @type {Boolean}
+      ###
+      animation: true
+
+      ###*
+       * Enable the reflex mode, click on the element to continue the tour
+       * @type {Boolean}
+      ###
+      reflex: false
+
+
+      ###*
+       * Css class to add to the .popover element for this step only
+       * @type {String}
+      ###
+      addClass:""
+
+      ###*
+       * ...
+       * @ignore
+      ###
+
+      # #
+      # # {Function} Function to execute right before each step is shown.
+      # # If onShow returns a promise (see $.Deferred() documentation), Bootstrap-tour will wait until
+      # # completition of the promise before displaying the popover
+      # #
+      # onShow: (tour, event) ->
+
+      # #
+      # # {Function} Function to execute right after each step is shown.
+      # #
+      # onShown: (tour, event) ->
+
+      # #
+      # # {Function} Function to execute right before each step is hidden.
+      # #
+      # onHide: (tour, event) ->
+
+      # #
+      # # {Function} Function to execute on end
+      # #
+      # onEnd: (tour, event) ->
+
+  ###*
+   * Ignore backends
+   * @ignore
+  ###
   class Backend
+    dispose: () ->
     setState: (options, key, value) ->
     getState: (options, key) ->
 
@@ -18,10 +924,14 @@
     constructor: (options) ->
       @ns = "__db_#{options.name}__"
       window[@ns] = {}
+    _avail:() -> window.hasOwnProperty(@ns)
     setState: (options, key, value) ->
+      return if !@_avail()
       window[@ns][key] = value
     getState: (options, key) ->
+      return if !@_avail()
       window[@ns][key] or null
+    dispose: -> delete window[@ns]
 
   class Cookie extends Backend
     constructor:(options) ->
@@ -37,10 +947,12 @@
     setState: (options, key, value) ->
       window.localStorage.setItem("#{@ns}#{key}", JSON.stringify(value))
     getState: (options, key) ->
+      item = null
       try
-        return JSON.parse(window.localStorage.getItem("#{@ns}#{key}"))
+        item = window.localStorage.getItem("#{@ns}#{key}")
+        return JSON.parse(item)
       catch err
-        console.error(err)
+        console.error(err, item)
         return null
 
   backend =
@@ -48,463 +960,5 @@
     Cookie: Cookie
     LocalStorage: LocalStorage
 
-  class Tour
-    constructor: (options) ->
-      @_options = $.extend(true, {}, Tour.defaults, options)
-
-      # For event handling only
-      # Note: I wish I could add underscore as a dependency (or something else)
-      @_evt = $('<div/>')
-      @bind = $.proxy(@_evt.bind, @_evt)
-      @one = $.proxy(@_evt.one, @_evt)
-
-      # Setup persistence
-      @persistence = new backend[if @_options.persistence of backend then  @_options.persistence else "Memory"](@_options);
-
-      @_steps = []
-      @setCurrentStep()
-
-      # Reshow popover on window resize using debounced resize
-      @_onresize(=> @showStep(@_current) unless @ended)
-
-    setState: (key, value) ->
-      @persistence.setState(@_options, key, value);
-      @_options.afterSetState(key, value)
-
-    getState: (key) ->
-      value = @persistence.getState(@_options, key);
-      @_options.afterGetState(key, value)
-      return value
-
-    # Add a new step
-    addStep: (step) ->
-      @_steps.push step
-
-    # Get a step by its indice
-    getStep: (i) ->
-      $.extend({
-        #
-        # Step index
-        #
-        index: i
-
-        #
-        # {String} Path to the page on which the step should be shown. this allows you
-        # to build tours that span several pages!
-        #
-        path: ""
-
-        #
-        # {jQuery | Css Selector | Function} HTML element on which the step popover
-        # should be shown.
-        #
-        element:null
-
-        #
-        # {String} How to position the popover - top | bottom | left | right.
-        #
-        placement: "right"
-
-        #
-        # {String | Function(step)} Step title
-        #
-        title: ""
-
-        #
-        # {String | Function(step)} Step content
-        #
-        content: ""
-
-        #
-        # {Number} Index of the step to show after this one, starting from 0 for the
-        # first step of the tour. -1 to not show the link to next step.
-        # By default, the next step (in the order you added them) will be shown.
-        #
-        next: if i == @_steps.length - 1 then -1 else i + 1
-
-        #
-        # {Number} Index of the step to show before this one, starting from 0 for
-        # the first step of the tour. -1 to not show the link to previous step.
-        # By default, the previous step (in the order you added them) will be shown.
-        #
-        prev: i - 1
-
-        #
-        # {Boolean} Apply a css fade transition to the tooltip.
-        #
-        animation: true
-
-        #
-        # {Boolean} Enable the reflex mode, click on the element to continue the tour
-        #
-        reflex: false
-
-
-        #
-        # {String} Css class to add to the .popover element for this step only
-        #
-        addClass:""
-
-        #
-        # {Function} Function to execute right before each step is shown.
-        # If onShow returns a promise (see $.Deferred() documentation), Bootstrap-tour will wait until
-        # completition of the promise before displaying the popover
-        #
-        onShow: (tour, event) ->
-
-        #
-        # {Function} Function to execute right after each step is shown.
-        #
-        onShown: (tour, event) ->
-
-        #
-        # {Function} Function to execute right before each step is hidden.
-        #
-        onHide: (tour, event) ->
-      }, @_steps[i]) if @_steps[i]?
-
-    # Start tour from current step
-    # Returns a Deferred
-    start: (force = false) ->
-      def = $.Deferred()
-      return def.fail("Tour ended").promise() if @ended() && !force
-
-      # Go to next step after click on element with class .next
-      $(document).off("click.bootstrap-tour",".popover .next").on "click.bootstrap-tour", ".popover .next", (e) =>
-        e.preventDefault()
-        @next(trigger:'popover')
-
-      # Go to previous step after click on element with class .prev
-      $(document).off("click.bootstrap-tour",".popover .prev").on "click.bootstrap-tour", ".popover .prev", (e) =>
-        e.preventDefault()
-        @prev(trigger:'popover')
-
-      # End tour after click on element with class .end
-      $(document).off("click.bootstrap-tour",".popover .end").on "click.bootstrap-tour", ".popover .end", (e) =>
-        e.preventDefault()
-        @end(trigger:'popover')
-
-      @_setupKeyboardNavigation()
-
-      @showStep(@_current, def)
-
-      def.promise()
-
-    # Event object:
-    # `{String}` `trigger`:: `api | popover | reflex`
-    # `{jQuery}` `element`: the current step element
-    #     Note that `onShow` Event does not provides the `element` attribute use `onShown` instead)
-    _initEvent: (e = {}) ->
-      e.trigger = "api" if !e.trigger
-      step = @getStep(@_current)
-      if e.element is false
-        delete e.element
-      else if step
-        e.element = @getElement(step.element)
-      e
-
-    # Hide current step and show next step
-    # Returns a promise
-    next:(e) ->
-      def = $.Deferred()
-      @hideStep(@_current, @_initEvent(e))
-      setTimeout(() =>
-        @showNextStep(def)
-      , 0)
-      def.promise()
-
-    # Hide current step and show prev step
-    # Returns a promise
-    prev:(e)->
-      def = $.Deferred()
-      @hideStep(@_current, @_initEvent(e))
-      setTimeout(() =>
-        @showPrevStep(def)
-      , 0)
-      def.promise()
-
-    # End tour
-    end:(e) ->
-      @hideStep(@_current, @_initEvent(e))
-      $(document).off ".bootstrap-tour"
-      @setState("end", "yes")
-
-    # Verify if tour is enabled
-    ended: ->
-      !!@getState("end")
-
-    # Restart tour
-    restart: ->
-      @setState("current_step", null)
-      @setState("end", null)
-      @setCurrentStep(0)
-      @start()
-
-    #
-    # @param  {Mixed} element
-    # @return {jQuery}      a jQuery object
-    getElement: (el) ->
-      if typeof el is 'function'
-        el = el()
-      if !el
-        return $()
-      if el instanceof jQuery
-        return el
-      return $(el)
-
-    # Hide the specified step
-    hideStep: (i, e) ->
-      e    = @_initEvent() if !e
-      step = @getStep(i)
-      $el  = @getElement(step.element)
-      step.onHide(@, e) if step.onHide?
-      @_options.step.onHide(@, e) if @_options.step.onHide isnt step.onHide
-
-      if step.reflex
-        $el.css("cursor", "").off("click.tour")
-
-      $el.popover("hide")
-
-    # Wrap if necessary the return call by a deferred
-    _deferred: (d) ->
-      return d if d and d.done
-      # If the function did not returned a promise, return a resolved promise
-      return $.Deferred().resolve().promise()
-
-    # Show the specified step
-    # i : step number
-    # def (optional) the deferred to resolve
-    showStep: (i, def) ->
-      step = @getStep(i)
-
-      unless step
-        def.reject() if def
-        return
-
-      @setCurrentStep(i)
-
-      # Redirect to step path if not already there
-      # Compare to path, then filename
-      if step.path != "" && document.location.pathname != step.path && document.location.pathname.replace(/^.*[\\\/]/, '') != step.path
-        document.location.href = step.path
-        return
-
-      e = @_initEvent(element:false)
-
-      defs = []
-      defs.push(@_deferred(step.onShow(@, e))) if step.onShow?
-      defs.push(@_deferred(@_options.step.onShow(@, e))) if @_options.step.onShow isnt step.onShow
-
-      $.when.apply($, defs).always(() =>
-        $el = @getElement(step.element)
-        e = @_initEvent(element:$el)
-
-        # If step element is hidden or does not exist, skip step
-        if $el.length is 0 or not $el.is(":visible")
-          @_evt.trigger(jQuery.Event("skipping", step:step));
-          @showNextStep(def)
-          return
-
-        # Show popover
-        @_showPopover(step, i)
-
-        step.onShown(@, e) if step.onShown?
-        @_options.step.onShown(@, e) if @_options.step.onShown isnt step.onShown
-
-        def.resolve() if def
-      )
-
-    # Setup current step variable
-    setCurrentStep: (value) ->
-      if value?
-        @_current = value
-        @setState("current_step", value)
-      else
-        @_current = @getState("current_step")
-        if not @_current or @_current is "null"
-          @_current = 0
-        else
-          @_current = parseInt(@_current, 10)
-
-    # Show next step
-    showNextStep: (def) ->
-      step = @getStep(@_current)
-      @showStep(step.next, def)
-
-    # Show prev step
-    showPrevStep: (def) ->
-      step = @getStep(@_current)
-      @showStep(step.prev, def)
-
-    # Show step popover
-    _showPopover: (step, i) ->
-      $el     = @getElement(step.element)
-
-      options = $.extend true, {}, @_options
-      # options = @_options
-
-      if step.options
-        $.extend options, step.options
-
-      if step.reflex
-        $el
-          .css("cursor", "pointer")
-          .on "click.tour", (e) => @next(trigger:'reflex')
-
-      step.content = @_getProp(step, options.step, "content", step)
-      $nav = $(options.template(step)).wrapAll('<div/>').parent()
-
-      if step.prev == 0
-        $nav.find('.prev').remove()
-      if step.next == 0
-        $nav.find('.next').remove()
-
-      content = $nav.html()
-      $nav.remove();
-
-      $el.popover({
-        placement: step.placement
-        trigger: "manual"
-        title: @_getProp(step, options.step, "title", step)
-        content: content
-        html: true
-        animation: step.animation
-      });
-
-      popover = $el.data("popover")
-      tip     = popover.tip().addClass("#{options.name}-step#{i} #{options.step.addClass} #{step.addClass}")
-      popover.show()
-      @_reposition(tip)
-      @_scrollIntoView(tip)
-
-    # Prevent popups from crossing over the edge of the window
-    _reposition: (tip) ->
-      tipOffset = tip.offset()
-      offsetBottom = $(document).outerHeight() - tipOffset.top - $(tip).outerHeight()
-      tipOffset.top = tipOffset.top + offsetBottom if offsetBottom < 0
-      offsetRight = $(document).outerWidth() - tipOffset.left - $(tip).outerWidth()
-      tipOffset.left = tipOffset.left + offsetRight if offsetRight < 0
-
-      tipOffset.top = 0 if tipOffset.top < 0
-      tipOffset.left = 0 if tipOffset.left < 0
-      tip.offset(tipOffset)
-
-    # Scroll to the popup if it is not in the viewport
-    _scrollIntoView: (tip) ->
-      tipRect = tip.get(0).getBoundingClientRect()
-      unless tipRect.top > 0 && tipRect.bottom < $(window).height() && tipRect.left > 0 && tipRect.right < $(window).width()
-        tip.get(0).scrollIntoView(true)
-
-    # Debounced window resize
-    _onresize: (cb, timeout) ->
-      $(window).resize ->
-        clearTimeout(timeout)
-        timeout = setTimeout(cb, 100)
-
-    # Keyboard navigation
-    _setupKeyboardNavigation: ->
-      if @_options.keyboard
-        $(document).on "keyup.bootstrap-tour", (e) =>
-          return unless e.which
-          switch e.which
-            when 39
-              e.preventDefault()
-              if @_current < @_steps.length - 1
-                @next()
-            when 37
-              e.preventDefault()
-              if @_current > 0
-                @prev()
-
-    # The val is a function
-    _execOrGet: (val, arg) -> if $.isFunction(val) then val(arg) else val
-    # obj : first option
-    # objRoot: second option
-    # prop: prop to get
-    _getProp: (obj, obj2, prop, args...) -> if obj[prop] then @_execOrGet(obj[prop], args...) else @_execOrGet(obj2[prop], args...)
-
-
-    Tour.defaults =
-      #
-      # {String} This option is used to build the name of the cookie where the tour state is stored. You can initialize several tours with different names in the same page and application.
-      #
-      name: "tour"
-
-      #
-      # {String} "Cookie" | "LocalStorage" | "Memory" (default "Memory")
-      # Note: persistence: "Cookie" requires jquery.cookie.js
-      persistence: "Memory"
-
-      #
-      # {Boolean} Keyboard navigation
-      #
-      keyboard: true
-
-      #
-      # {Function} Navigation template, `.prev`, `.next` and `.end`
-      # will be removed at runtime if necessary
-      #
-      # The template can be an underscore template or $.tmpl ...
-      #
-      template:(step) ->
-        '''
-          <p>#{step.content}</p>"
-          <hr/>
-          <p>
-            <a href="#{step.prev}" class="prev">Previous</a>
-            <a href="#{step.next}" class="next">Next</a>
-            <a href="#" class="pull-right end">End tour</a>
-          </p>
-        '''
-
-      afterSetState: (key, value) ->
-      afterGetState: (key, value) ->
-
-      #
-      # Global step settings shared between the steps
-      #
-      step:
-        #
-        # {String | Function(step)} Default step title
-        #
-        title:null
-
-        #
-        # {String | Function(step)} Default step content
-        #
-        content:null
-
-        #
-        # {String} Css class to add to the .popover element
-        #
-        # Note: if `addClass` is defined at the step level, the two defined `addClass` will
-        # be taken into account in the popover
-        addClass:""
-
-        #
-        # {Function} Function to execute right before each step is shown.
-        # If onShow returns a promise (see $.Deferred() documentation), Bootstrap-tour will wait until
-        # completition of the promise before displaying the popover
-        #
-        # Note: if `onShow` is defined at the step level, the two defined `onShow`
-        # callbacks will be taken into account in the step.
-        onShow: (tour, event) ->
-
-        #
-        #  {Function} Function to execute right after each step is shown.
-        #
-        # Note: if `onShown` is defined at the step level, the two defined `onShown`
-        # callbacks will be taken into account in the step.
-        onShown: (tour, event) ->
-
-        #
-        # {Function} Function to execute right before each step is hidden.
-        #
-        # Note: if `onHide` is defined at the step level, the two defined `onHide`
-        # callbacks will be taken into account in the step.
-        onHide: (tour, event) ->
-
-
   window.Tour = Tour
-
 )(jQuery, window)

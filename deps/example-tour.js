@@ -14,10 +14,7 @@ jQuery(function($) {
     element: "#usage",
     placement: "right",
     title: "Setup in four easy steps",
-    content: "Easy is better, right? Easy like Bootstrap.",
-    options: {
-      labels: {prev: "Go back", next: "Hey", end: "Stop"}
-    }
+    content: "Easy is better, right? Easy like Bootstrap."
   });
   tour.addStep({
     path: "index.html",
