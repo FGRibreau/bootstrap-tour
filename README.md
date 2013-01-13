@@ -1,7 +1,7 @@
 Bootstrap Tour Extended
 ------------
 
-## [Documentation](fgribreau.github.com/bootstrap-tour/docs/bootstrap-tour.js.html)
+## [Documentation](http://fgribreau.github.com/bootstrap-tour/docs/bootstrap-tour.js.html)
 
 ### Improvement
 - `Tour` constructor now accept a `template` attribute thus the `labels.*` attribute has been removed.
