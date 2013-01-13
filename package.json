@@ -3,10 +3,7 @@
   "description": "Quick and easy product tours with Twitter Bootstrap Popovers",
   "version": "0.9.3",
   "homepage": "https://github.com/FGRibreau/bootstrap-tour",
-  "author": {
-    "name": "FG Ribreau",
-    "email": "github@fgribreau.com"
-  },
+  "author": "Francois-Guillaume Ribreau <npm@fgribreau.com> (http://fgribreau.com)",
   "repository": {
     "type": "git",
     "url": "https://github.com/FGRibreau/bootstrap-tour.git"
@@ -33,7 +30,8 @@
     "grunt-coffee": "0.0.6",
     "dox": "~0.4.1",
     "grunt-shell": "~0.1.4",
-    "dox-foundation": "git+https://github.com/FGRibreau/dox-foundation.git#master"
+    "markdown": "~0.4.0",
+    "marked": "~0.2.7"
   },
   "keywords": []
 }

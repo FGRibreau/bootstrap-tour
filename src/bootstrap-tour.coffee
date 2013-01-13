@@ -1,10 +1,13 @@
 ###*
+ * Bootstrap Tour Extended
  *
  *     Copyright (c) 2013 FG Ribreau (@fgribreau)
  *     Licensed under the MIT, GPL licenses.
- *
+ * @ignore
 ###
+
 ###*
+ * (only for CoffeeScript)
  * @private
  * @ignore
 ###
@@ -36,16 +39,7 @@
       @_onresize(=> @_showStep(@_current) unless @ended)
 
     ###*
-     * Add a step to the tour
-     * @param {Object} step An optional object that describe the step
-     * @see  Tour.stepDefaults
-    ###
-    addStep: (step) ->
-      @_steps.push $.extend({}, Tour.stepDefaults, step)
-      @
-
-    ###*
-     * Cleanly remove the Tour
+     * Remove the Tour
     ###
     dispose:() ->
       @_setState("current_step", null)
@@ -67,25 +61,16 @@
       $.each(@_options.step, (k) => @_options.step[k] = null)  if @_options.step
       $.each(@_options, (k) => @_options[k] = null)
 
-    # Get a step by its indice
-    getStep: (i) ->
-      $.extend(@_steps[i], {
-        index: i
 
-        #
-        # {Number} Index of the step to show after this one, starting from 0 for the
-        # first step of the tour. -1 to not show the link to next step.
-        # By default, the next step (in the order you added them) will be shown.
-        #
-        next: if i == @_steps.length - 1 then -1 else i + 1
+    ###*
+     * Add a step to the tour
+     * @param {Object} step An optional object that describe the step
+     * @see  Tour.stepDefaults
+    ###
+    addStep: (step) ->
+      @_steps.push $.extend({}, Tour.stepDefaults, step)
+      @
 
-        #
-        # {Number} Index of the step to show before this one, starting from 0 for
-        # the first step of the tour. -1 to not show the link to previous step.
-        # By default, the previous step (in the order you added them) will be shown.
-        #
-        prev: i - 1
-      }) if @_steps[i]?
 
     ###*
      * Start tour from current step
@@ -118,11 +103,42 @@
       @_showStep(@_current, def)
       def.promise()
 
-    #
-    # Trigger callbacks for the given event
-    #
-    #
-    #
+    ###*
+     * Goto a step by its index
+     * @param  {Number} index Step index
+     * @return {Deferred}     The deferred will be resolved when the step `index` will be shown
+    ###
+    gotoStep: (index) -> @_when @_mapTimes(index, @.next), @
+
+    ###*
+     * Attach an event handler function for one event.
+     * @param  {String}   event    A string containing one Bootstrap-tour event types, it can be "hide", "hidden", "show", "shown" or "skip". Each event can have a `:step{index}` path appended. For instance the event "shown:step0" will be triggered when the first step will be shown on screen.
+     * @param  {String}   selector A selector string to filter the descendants of the selected elements that trigger the event.
+     * @optional
+     * @param  {String}   data     Data to be passed to the handler in event.data when an event is triggered.
+     * @optional
+     * @param  {Function} handler  A function to execute when the event is triggered.
+    ###
+    on:(event, selector, data, handler) ->
+
+    ###*
+     * Attach a handler to an event. The handler is executed at most once.
+     * @param {String} name      A string containing one Bootstrap-tour event types, such as "hide", "hidden", "show", "shown" or "skip".
+     * @param {Mixed}  data      Data to be passed to the handler in `event.data` when an event is triggered.
+     * @optional
+     * @param {Function} handler A function to execute at the time the event is triggered.
+     * @optional
+     * see: #on
+    ###
+    one:(event, data, handler) ->
+
+    ###*
+     * Remove an event handler.
+     * @param  {String} event     Event name
+     * @param  {Function} handler A handler function previously attached for the event(s), or the special value false.
+    ###
+    off:(event, handler) ->
+
     ###*
      * Trigger an event on `Tour`
      * @param  {String} name Event name (e.g. "show", "shown", "hide", "hidden", "skip")
@@ -164,7 +180,7 @@
     ###
     end:(trigger = "api") ->
       def = $.Deferred()
-      step       = @getStep(@_current)
+      step       = @_getStep(@_current)
       e          = step:step, trigger:trigger
 
       @_hideStep(@_current, e).always(() =>
@@ -175,16 +191,13 @@
       )
       def.promise()
 
-    # Verify if tour is enabled
+    ###*
+     * Verify if tour is enabled
+     * @return {Boolean} true if the tour is ended
+    ###
     ended: ->
       !!@_getState("end")
 
-    ###*
-     * Goto a step by its index
-     * @param  {Number} index Step index
-     * @return {Deferred}     The deferred will be resolved when the step `index` will be shown
-    ###
-    gotoStep: (index) -> @_when @_mapTimes(index, @.next), @
 
     ###*
      * Restart the tour
@@ -204,8 +217,29 @@
       @on(evtName, $.proxy(@_debug, @, evtName)) for evtName in ["show", "shown","hide","hidden", "end"]
 
     ###*
-     * Private API
+     * Get a step by its indice
+     * @param  {Number} i
+     * @return {Object}
+     * @private
     ###
+    _getStep: (i) ->
+      $.extend(@_steps[i], {
+        index: i
+
+        #
+        # {Number} Index of the step to show after this one, starting from 0 for the
+        # first step of the tour. -1 to not show the link to next step.
+        # By default, the next step (in the order you added them) will be shown.
+        #
+        next: if i == @_steps.length - 1 then -1 else i + 1
+
+        #
+        # {Number} Index of the step to show before this one, starting from 0 for
+        # the first step of the tour. -1 to not show the link to previous step.
+        # By default, the previous step (in the order you added them) will be shown.
+        #
+        prev: i - 1
+      }) if @_steps[i]?
 
     ###*
      * Returns an element
@@ -228,7 +262,7 @@
      * @private
     ###
     _showNextStep: (def) ->
-      step = @getStep(@_current)
+      step = @_getStep(@_current)
       @_showStep(step.next, def)
 
     ###*
@@ -237,7 +271,7 @@
      * @private
     ###
     _showPrevStep: (def) ->
-      step = @getStep(@_current)
+      step = @_getStep(@_current)
       @_showStep(step.prev, def)
 
     ###*
@@ -247,7 +281,7 @@
      * @private
     ###
     _showStep: (i, def) ->
-      step = @getStep(i)
+      step = @_getStep(i)
 
       unless step
         def.reject("Step #{i} undefined") if def
@@ -291,7 +325,7 @@
     ###
     _hideStep: (i, e = {}) ->
       def = $.Deferred()
-      step = e.step = @getStep(i)
+      step = e.step = @_getStep(i)
       $el  = e.element = @_getElement(step.element)
 
       defs = []
@@ -395,7 +429,7 @@
         delete e.defs
 
       e.trigger = "api" if !e.trigger
-      step = e.step = @getStep(@_current) if !e.step
+      step = e.step = @_getStep(@_current) if !e.step
       if name == "show" or name.indexOf("show:") == 0
         delete e.element
       else if step
@@ -540,7 +574,7 @@
     ###
     _onKeyUp: (e) ->
       return unless e.which
-      step = @getStep(@_current)
+      step = @_getStep(@_current)
       return if not step
       switch e.which
         # next
@@ -661,9 +695,11 @@
      * @type {Object} defaults
     ###
     Tour.defaults =
+
       ###*
-       * This option is used to build the name of the cookie where the tour state is stored.
-       * You can initialize several tours with different names in the same page and application.
+       * name
+       *
+       * @description  This option is used to build the name of the cookie where the tour state is stored. You can initialize several tours with different names in the same page and application.
        * @type {String} name
       ###
       name: "tour"
@@ -685,6 +721,7 @@
 
       ###*
        * Specify a function that return a css string
+       * @type   {Function}
        * @return {String} css code that will be injected if `overlay` is used
       ###
       style:() ->
@@ -694,15 +731,15 @@
         """
 
       ###*
-       * Global step parameters
+       * # Global step parameters
        *
-       * Each of these parameters can be overriden at the step level
+       * Each of the following parameters can be overriden at **each** step level.
        * @type {Object}
       ###
       step:
         ###*
          * Default step title
-         * @type {String | Function(step)}
+         * @type {String, Function(step)}
         ###
         title:null
 
@@ -712,23 +749,27 @@
         ###
         content:null
 
-        #
-        # {String} Css class to add to the .popover element
-        #
-        # Note: if `addClass` is defined at the step level, the two defined `addClass` will
-        # be taken into account in the popover
+
+        ###*
+         * Css class to add to the .popover element
+         * @description Note: if `addClass` is defined at the step level.
+         *              The two defined `addClass` will be taken into account in the popover
+         * @type {String}
+        ###
         addClass:""
 
         ###*
-         * Globally enable an overlay for each step element
-         * @type {Boolean} true if activated, false otherwise
+         * Globally enable an overlay for each step element, `true` if activated, `false` otherwise
+         * @type {Boolean}
          * @todo Handle Bootstrap modal, pull requests are welcome !
         ###
         overlay: false
 
-        #
-        # {Boolean} Globally enable the reflex mode, click on the element to continue the tour
-        #
+
+        ###*
+         * Globally enable the reflex mode, click on the element to continue the tour
+         * @type {Boolean}
+        ###
         reflex: false
 
         ###*
@@ -738,6 +779,7 @@
          *              The template can be an underscore template or $.tmpl ...
          *
          * @param  {Object} step The step to render
+         * @type   {Function}
          * @return {String}      A string containing the HTML that will be injected into the popover
         ###
         template:(step) ->
@@ -807,9 +849,9 @@
       #
       element:null
 
-      #
-      # {String} How to position the popover - top | bottom | left | right.
-      #
+      ###*
+       * {String} How to position the popover - top | bottom | left | right.
+      ###
       placement: "right"
 
       #

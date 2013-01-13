@@ -1,15 +1,9 @@
-# Bootstrap Tour Extended [![Build Status](https://travis-ci.org/FGRibreau/bootstrap-tour.png)](https://travis-ci.org/FGRibreau/bootstrap-tour)
-
-Quick and easy *and extremely configurable* product tours with Twitter Bootstrap Popovers.
-
-Fork of [sorich87 bootstrap-tour v1](http://sorich87.github.com/bootstrap-tour/).
-
 Extra features
 ------------
 
 ### Improvement
 - `Tour` constructor now accept a `template` attribute thus the `labels.*` attribute has been removed.
-- `Tour` now emits an `skipping(step)` event when skipping a step because the element is not visible.
+- `Tour` now emits an `skip(step)` event when skipping a step because the element is not visible.
 - `next()` and `prev()` return promise that is resolved when the popover is shown and that all callbacks have been executed
 - If `onShow` (at the `step` level or `Tour` level) returns a promise (see [$.Deferred()](http://api.jquery.com/category/deferred-object/)), Bootstrap-tour will wait until the completition of the promise(s) before displaying the popover
 - Persistence option `Memory`, `Cookie`, `LocalStorage` via constructor `new Tour({persistence:"LocalStorage"})`
