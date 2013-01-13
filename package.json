@@ -1,7 +1,7 @@
 {
   "name": "bootstrap-tour",
   "description": "Quick and easy product tours with Twitter Bootstrap Popovers",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "homepage": "https://github.com/FGRibreau/bootstrap-tour",
   "author": "Francois-Guillaume Ribreau <npm@fgribreau.com> (http://fgribreau.com)",
   "repository": {
