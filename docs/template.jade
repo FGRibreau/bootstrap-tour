@@ -44,6 +44,10 @@ html
         //- float:right; margin-top:8px 
       }
 
+      .popover {width:510px;}
+      .popover img{width:500px; min-height:239px;}
+
+
       @import url(http://fonts.googleapis.com/css?family=Pacifico);
 
       .navbar-inverse .nav.sponsored > li.inter > p{
@@ -60,20 +64,20 @@ html
         transition:all 100ms linear;
       }
 
-      .navbar-inverse .nav > li.bringr{
+      .navbar-inverse .nav > li.sponsor-bringr{
         background-color: #ffffff;
       }
-        .navbar-inverse .nav > li.bringr > a{
+        .navbar-inverse .nav > li.sponsor-bringr > a{
           font-family: "Pacifico";
           font-size: 17px;
           line-height: 19px;
           color: black;
         }
 
-      .navbar-inverse .nav > li.redsmin{
+      .navbar-inverse .nav > li.sponsor-redsmin{
         background-image: radial-gradient(50% 100%,#C91E13 0,#8E1509 100%);
       }
-        .navbar-inverse .nav > li.redsmin a{
+        .navbar-inverse .nav > li.sponsor-redsmin a{
           color:white;
           line-height: 19px;
         }
@@ -90,12 +94,13 @@ html
             ul.nav.pull-right.sponsored
               li.inter
                 p Development sponsored by
-              li.sponsor.bringr
-                a.bringr(href='http://bringr.net/?btt', title="Outil d'analyse des réseaux sociaux") Bringr
+              li.sponsor.sponsor-bringr
+                a.bringr(href='http://bringr.net/?btt', data-placement="bottom", title="Outil d'analyse des réseaux sociaux") Bringr
               li.inter
                 p and
-              li.sponsor.redsmin
-                a.redsmin(href='https://redsmin.com/?btt', title="Full Redis GUI") Redsmin
+              li.sponsor.sponsor-redsmin
+                a.redsmin(href='https://redsmin.com/?btt', data-placement="bottom", title="Fully featured GUI for Redis") Redsmin
+
 
     header.jumbotron.subhead#overview
       div.container
@@ -107,7 +112,7 @@ html
         .span3.bs-docs-sidebar
           ul.nav.nav-list.bs-docs-sidenav.affix-top
               li 
-                a(href='#why') Why/What/How/Who ?
+                a(href='#why') Why/What/Getting Started/Who ?
               - each symbol in symbols
                 li
                   if name === currentName
@@ -121,187 +126,216 @@ html
           section#why
             .page-header
               h1 Why did you created it?
-              p Bootstrap Tour Extended is a fork of 
-                a(href="http://sorich87.github.com/bootstrap-tour/") Bootstrap Tour by sorich87
-                | . I forked it because it was not enough powerful to be useful as a tour library for my own products 
-                a(href="http://bringr.net/?tbb", title="Outil d'analyse des réseaux sociaux") Bringr 
-                | and 
-                a(href="https://redsmin.com/?tbb", title="Full Redis GUI") Redsmin
-                | . 
-              p I wanted a 
-                strong persisted
-                | , 
-                strong clean
-                | , 
-                strong evented
-                | , 
-                strong deferred based 
-                | Tour library with 
-                strong optional overlay support
-                | . 
-              p Online app Tour services could not offer (from what I saw) this depth of customization.
+            p Bootstrap Tour Extended is a fork of 
+              a(href="http://sorich87.github.com/bootstrap-tour/") Bootstrap Tour by sorich87
+              | . I forked it because it was not enough powerful to be useful as a tour library for my own products 
+              a.bringr(href="http://bringr.net/?tbb", data-placement='bottom', title="Outil d'analyse des réseaux sociaux") Bringr 
+              | and 
+              a.redsmin(href="https://redsmin.com/?tbb", data-placement='bottom', title="Full Redis GUI") Redsmin
+              | . 
+            p I wanted a 
+              strong persisted
+              | , 
+              strong clean
+              | , 
+              strong evented
+              | , 
+              strong deferred based 
+              | Tour library with 
+              strong optional overlay support
+              | . 
+            p Online app Tour services could not offer (from what I saw) this depth of customization.
 
           section#what
             .page-header
               h1 What?
-              p Bootstrap Tour Extended allows developers to build quickly and easily  
-                strong extremely configurable
-                |  product tours using Twitter Bootstrap Popovers.
+            p Bootstrap Tour Extended allows developers to build quickly and easily  
+              strong extremely configurable
+              |  product tours using Twitter Bootstrap Popovers.
 
-              p Some Tour global parameters can be 
-                code strings
-                |  or 
-                code functions
-                |  because sometimes the thing you want to expose does not exist when the Tour start.
+            p Some Tour global parameters can be 
+              code strings
+              |  or 
+              code functions
+              |  because sometimes the thing you want to expose does not exist when the Tour start.
 
-              p  Each 
-                a(href="#defaults") #defaults.step
-                |  parameters specified through 
-                code new Tour([options])
-                |  can be overriden at the step level with 
-                code tour.addStep([options])
-                | .
+            p  Each 
+              a(href="#defaults") #defaults.step
+              |  parameters specified through 
+              code new Tour([options])
+              |  can be overriden at the step level with 
+              code tour.addStep([options])
+              | .
 
-              p The default template can be completely replaced at the Tour level 
-                strong or even for a single step
-                | . It's a 
-                code function(step) -> string
-                | , so underscore 
-                code _.template()
-                | , jQuery 
-                code $.tmpl()
-                |  etc... are supported even if they are not Bootstrap Tour Extended dependencies.
-        
+            p The default template can be completely replaced at the Tour level 
+              strong or even for a single step
+              | . It's a 
+              code function(step) -> string
+              | , so underscore 
+              code _.template()
+              | , jQuery 
+              code $.tmpl()
+              |  etc... are supported even if they are not Bootstrap Tour Extended dependencies.
+          
+          section#demo
+            .page-header
+              h1 Demo
+            a(href="http://sorich87.github.com/bootstrap-tour/") See the demo from the original version by sorich87
+            p I accept pull-requests!
+
           section#how
             .page-header
               h1 Getting started
 
-              p In your web page:
-              pre
-                code.language-javascript
-                  :code
-                    <div id="a"></div><hr><div id="b"></div>
+            p In your web page:
+            pre
+              code.language-javascript
+                :code
+                  <div id="a"></div><hr><div id="b"></div>
 
-                    <script src="jquery.js"></script>
-                    <script src="bootstrap.tooltip.js"></script>
-                    <script src="bootstrap.popover.js"></script>
-                    <script src="bootstrap-tour.js"></script>
+                  <script src="jquery.js"></script>
+                  <script src="bootstrap.tooltip.js"></script>
+                  <script src="bootstrap.popover.js"></script>
+                  <script src="bootstrap-tour.js"></script>
 
-                    <script type="text/javascript">
-                    // Initialize the tour
-                    var tour = new Tour({
-                      name:"myTour",
-                      persistence:"Memory",
+                  <script type="text/javascript">
+                  // Initialize the tour
+                  var tour = new Tour({
+                    name:"myTour",
+                    persistence:"Memory",
 
+                    /**
+                     * Configure step wide parameters
+                     */
+                    step:{
                       /**
-                       * Configure step wide parameters
+                       * Css class to add to the .popover element
+                       * @description Note: if `addClass` is defined at the step level.
+                       *              The two defined `addClass` will be taken into account in the popover
+                       * @type {String}
                        */
-                      step:{
-                        /**
-                         * Css class to add to the .popover element
-                         * @description Note: if `addClass` is defined at the step level.
-                         *              The two defined `addClass` will be taken into account in the popover
-                         * @type {String}
-                         */
-                        addClass:'myPopover',
-
-                        /**
-                         * Step wide title function can be defined (and even overriden at each step level)
-                         * @type {String, Function(step)}
-                         */
-                        title: function(step){return "step "+step.index;},
-
-                        /**
-                         * Default step content
-                         * @type {String | Function(step)}
-                         */
-                        content: "Default content"
-                      }
+                      addClass:'myPopover',
 
                       /**
-                       * etc... See #defaults
+                       * Step wide title function can be defined (and even overriden at each step level)
+                       * @type {String, Function(step)}
+                       */
+                      title: function(step){return "step "+step.index;},
+
+                      /**
+                       * Default step content
+                       * @type {String | Function(step)}
+                       */
+                      content: "Default content"
+                    }
+
+                    /**
+                     * etc... See #defaults
+                     */
+                  });
+
+                  /**
+                   * Add a step
+                   */
+                  tour
+                    .addStep({
+                      /**
+                       * {jQuery | Css Selector | Function} HTML element on which the step popover
+                       * @type {String}
+                       */
+                      element:   "#a",   
+
+                      /**
+                       * {String} How to position the popover - top | bottom | left | right.
+                       * @type {String}
+                       */
+                      placement: "bottom",
+
+                      /**
+                       * Title of the popover
+                       * @type {String | Function}
+                       */
+                      title:     "Hello world!"
+
+                      /**
+                       * etc... See #stepDefaults
                        */
                     });
+                  
+                  /**
+                   * Oh yes, addStep/on/off/one are chainable
+                   */
+                  tour
+                    .addStep({
+                      /**
+                       * #c does not exist yet but will be created by the following "show" event handler
+                       * @type {String}
+                       */
+                      element: "#c",
 
-                    //  Add a step
-                    tour
-                      .addStep({
-                        /**
-                         * {jQuery | Css Selector | Function} HTML element on which the step popover
-                         * @type {String}
-                         */
-                        element:   "#a",   
+                      /**
+                       * This popover will have the css class .bootstrap-tour.myTour-step1.myPopover.myowncssclass
+                       * @type {String}
+                       */
+                      addClass: "myowncssclass" 
+                    })
+                    .on("show:step1", function(e){
+                      // Deferred support for asynchronous operation
+                      var def = $.Deferred();
 
-                        /**
-                         * {String} How to position the popover - top | bottom | left | right.
-                         * @type {String}
-                         */
-                        placement: "bottom",
+                      // Tell Bootstrap Tour to wait for this promise to resolve before displaying the step
+                      // Note: in the case of multiple event handler, Bootstrap Tour will wait that all promise are resolved
+                      // before showing the step
+                      // Note2: e.setPromise() is optional, if no promises were specified the step will be immediately displayed.
+                      e.setPromise(def.promise());
 
-                        /**
-                         * Title of the popover
-                         * @type {String | Function}
-                         */
-                        title:     "Hello world!"
-
-                        /**
-                         * etc... See #stepDefaults
-                         */
-                      });
-                    
-                    // addStep/on/off/one are chainable
-                    tour
-                      .addStep({
-                        /**
-                         * #c does not exist yet but will be created by on("show")
-                         * @type {String}
-                         */
-                        element: "#c",
-
-                        /**
-                         * This popover will have the css class .bootstrap-tour.myTour-step1.myPopover.myowncssclass
-                         * @type {String}
-                         */
-                        addClass: "myowncssclass" 
-                      })
-                      .on("show:step1", function(e){
-                        // Deferred support for asynchronous operation
-                        var def = $.Deferred();
-
-                        // Tell Bootstrap Tour to wait on this promise before displaying the step
-                        e.setPromise(def.promise());
-
-                        // "show" is the only event that does not have a "e.element" attribute
-                        // simply because the "show" event handler can wait, if necessary, for this element to be created.
-                        setTimeout(function(){
-                          $('<div>',{id:"c"}).appendTo("body");
-                          def.resolve();
-                        }, 1000);
-                      });
+                      // "show" is the only event that does not have a "e.element" attribute
+                      // simply because the "show" event handler can wait, if necessary, for this element to be created.
+                      setTimeout(function(){
+                        $('<div>',{id:"c"}).appendTo("body");
+                        def.resolve();
+                      }, 1000);
+                    });
 
 
-                    tour
-                      .on("show", function(e){
-                        console.log("Before showing step", e.step.index);
-                      })
-                      .on("shown", function(e){
-                        console.log("Step", e.step.index, "shown");
-                      })
-                      .on("shown:step0", console.log.bind(console, "First step is displayed"))
-                      .on("hide", function(e){
-                        console.log("Hidding step", e.step.index);
-                      })
-                      .on("hidden:step1", function(e){
-                        console.log("Step", e.step.index, "is hidden, this action was triggered by", e.trigger, "the step element was", e.step.element);
-                      })
-                      .on("hidden", function(e){
-                        console.log("Step", e.step.index, "is hidden");
-                      })
-                      .on("end", console.log.bind(console, "Tour ended"));
+                  tour
+                    .on("show", function(e){
+                      console.log("Trying to show step", e.step.index);
+                    })
+                    .on("shown", function(e){
+                      console.log("Step", e.step.index, "shown");
+                    })
+                    .on("shown:step0", console.log.bind(console, "First step is displayed"))
+                    .on("hide", function(e){
+                      console.log("Hidding step", e.step.index);
+                    })
+                    .on("hidden:step1", function(e){
+                      console.log("Step", 
+                          e.step.index, 
+                          "is hidden, this action was triggered by", 
+                          e.trigger, 
+                          "the resolved step element was", 
+                          e.element);
+                    })
+                    .on("hidden", function(e){
+                      console.log("Step", e.step.index, "is now hidden");
+                    })
+                    .on("end", console.log.bind(console, "Tour ended"));
 
-                    // Start the tour
-                    tour.start();
-                    </script>
+                  tour.on("skip", function(e){
+                    console.log("Bootstrap Tour is skipping step", 
+                      e.step.index,
+                      "because this step element",
+                      e.step.element,
+                      "was neither found nor visible.");
+                    // Thus this event handler will never be called
+                  });
+
+                  // Start the tour
+                  tour.start();
+
+                  // One more thing, .start(), .next(), .prev() and .end() all return promises!
+                  </script>
                     
           section#who
             .page-header
@@ -313,8 +347,8 @@ html
                 | , 
                 a(href="https://github.com/FGRibreau?tab=repositories") code (github)
                 | , 
-                a(href="http://bringr.net") d
-                a(href="http://redsmin.com") o
+                a.bringr(href="http://bringr.net", data-placement='top') d
+                a.redsmin(href="http://redsmin.com", data-placement='top') o
                 |.
 
           
@@ -325,7 +359,6 @@ html
           each symbol in dox
             section(id=symbol.ctx.name)
                 h1= symbol.ctx.name
-                h5.subheader
                 if !symbol.gtype && symbol.type
                   p
                     div(class=["label", "label-inverse", "radius", "ctx-type"])= symbol.type
@@ -358,7 +391,7 @@ html
               if !symbol.ctx.string && symbol.code
                 pre
                   code.language-javascript
-                    != symbol.code
+                    = symbol.code
          
     footer.footer
       div.container
@@ -367,9 +400,9 @@ html
           | created by 
           a.twitter-follow-button(href='https://twitter.com/FGRibreau',data-show-count='false') Francois-Guillaume Ribreau
         p Doxx is sponsored by 
-          a.bringr(href='http://bringr.net/?btt', title="Outil d'analyse des réseaux sociaux") Bringr 
+          a.bringr(href='http://bringr.net/?btt', data-placement='top', title="Outil d'analyse des réseaux sociaux") Bringr 
           | and 
-          a.redsmin(href='https://redsmin.com/?btt', title="Full Redis GUI") Redsmin
+          a.redsmin(href='https://redsmin.com/?btt', data-placement='top', title="Full Redis GUI") Redsmin
         p Theme borrowed from Twitter Bootstrap
 
     
@@ -378,6 +411,8 @@ html
     script(src="http://leaverou.github.com/prefixfree/prefixfree.js")
     script(src="http://twitter.github.com/bootstrap/assets/js/bootstrap-transition.js")
     script(src="http://twitter.github.com/bootstrap/assets/js/bootstrap-scrollspy.js")
+    script(src="http://twitter.github.com/bootstrap/assets/js/bootstrap-tooltip.js")
+    script(src="http://twitter.github.com/bootstrap/assets/js/bootstrap-popover.js")
     script(src="http://twitter.github.com/bootstrap/assets/js/bootstrap-dropdown.js")
     script(src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js")
     script(src="http://twitter.github.com/bootstrap/assets/js/bootstrap-affix.js")
@@ -403,4 +438,15 @@ html
           , bottom: 127
           }
         });
+
+        var c = {trigger:'hover', html:true};
+        $('.bringr').popover($.extend({
+          title:"Outil d'analyse des réseaux sociaux",
+          content:"<img src=\"http://farm9.staticflickr.com/8358/8376503257_0f71beb262.jpg\"/>"
+        }, c));
+
+        $('.redsmin').popover($.extend({
+          title:"Fully featured GUI for Redis",
+          content:"<img src=\"http://farm9.staticflickr.com/8475/8376696703_c96da066e3.jpg\"/>"
+        }, c));
       })

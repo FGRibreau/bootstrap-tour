@@ -34,6 +34,10 @@
         //- float:right; margin-top:8px 
       }
       
+      .popover {width:510px;}
+      .popover img{width:500px; min-height:239px;}
+      
+      
       @import url(http://fonts.googleapis.com/css?family=Pacifico);
       
       .navbar-inverse .nav.sponsored > li.inter > p{
@@ -50,20 +54,20 @@
         transition:all 100ms linear;
       }
       
-      .navbar-inverse .nav > li.bringr{
+      .navbar-inverse .nav > li.sponsor-bringr{
         background-color: #ffffff;
       }
-        .navbar-inverse .nav > li.bringr > a{
+        .navbar-inverse .nav > li.sponsor-bringr > a{
           font-family: "Pacifico";
           font-size: 17px;
           line-height: 19px;
           color: black;
         }
         
-      .navbar-inverse .nav > li.redsmin{
+      .navbar-inverse .nav > li.sponsor-redsmin{
         background-image: radial-gradient(50% 100%,#C91E13 0,#8E1509 100%);
       }
-        .navbar-inverse .nav > li.redsmin a{
+        .navbar-inverse .nav > li.sponsor-redsmin a{
           color:white;
           line-height: 19px;
         }
@@ -82,11 +86,11 @@
               <li class="inter">
                 <p>Development sponsored by</p>
               </li>
-              <li class="sponsor bringr"><a href="http://bringr.net/?btt" title="Outil d'analyse des réseaux sociaux" class="bringr">Bringr</a></li>
+              <li class="sponsor sponsor-bringr"><a href="http://bringr.net/?btt" data-placement="bottom" title="Outil d'analyse des réseaux sociaux" class="bringr">Bringr</a></li>
               <li class="inter">
                 <p>and</p>
               </li>
-              <li class="sponsor redsmin"><a href="https://redsmin.com/?btt" title="Full Redis GUI" class="redsmin">Redsmin</a></li>
+              <li class="sponsor sponsor-redsmin"><a href="https://redsmin.com/?btt" data-placement="bottom" title="Fully featured GUI for Redis" class="redsmin">Redsmin</a></li>
             </ul>
           </div>
         </div>
@@ -102,7 +106,7 @@
       <div class="row scrollspy">
         <div class="span3 bs-docs-sidebar">
           <ul class="nav nav-list bs-docs-sidenav affix-top">
-            <li> <a href="#why">Why/What/How/Who ?</a></li>
+            <li> <a href="#why">Why/What/Getting Started/Who ?</a></li>
             <li><a href="#Tour"><i class="alert alert-info"></i>Tour</a>
             </li>
             <li><a href="#dispose"><i class="alert alert-info"></i>dispose</a>
@@ -143,25 +147,32 @@
           <section id="why">
             <div class="page-header">
               <h1>Why did you created it?</h1>
-              <p>Bootstrap Tour Extended is a fork of <a href="http://sorich87.github.com/bootstrap-tour/">Bootstrap Tour by sorich87</a>. I forked it because it was not enough powerful to be useful as a tour library for my own products <a href="http://bringr.net/?tbb" title="Outil d'analyse des réseaux sociaux">Bringr </a>and <a href="https://redsmin.com/?tbb" title="Full Redis GUI">Redsmin</a>. </p>
-              <p>I wanted a <strong>persisted</strong>, <strong>clean</strong>, <strong>evented</strong>, <strong>deferred based </strong>Tour library with <strong>optional overlay support</strong>. </p>
-              <p>Online app Tour services could not offer (from what I saw) this depth of customization.</p>
             </div>
+            <p>Bootstrap Tour Extended is a fork of <a href="http://sorich87.github.com/bootstrap-tour/">Bootstrap Tour by sorich87</a>. I forked it because it was not enough powerful to be useful as a tour library for my own products <a href="http://bringr.net/?tbb" data-placement="bottom" title="Outil d'analyse des réseaux sociaux" class="bringr">Bringr </a>and <a href="https://redsmin.com/?tbb" data-placement="bottom" title="Full Redis GUI" class="redsmin">Redsmin</a>. </p>
+            <p>I wanted a <strong>persisted</strong>, <strong>clean</strong>, <strong>evented</strong>, <strong>deferred based </strong>Tour library with <strong>optional overlay support</strong>. </p>
+            <p>Online app Tour services could not offer (from what I saw) this depth of customization.</p>
           </section>
           <section id="what">
             <div class="page-header">
               <h1>What?</h1>
-              <p>Bootstrap Tour Extended allows developers to build quickly and easily  <strong>extremely configurable</strong> product tours using Twitter Bootstrap Popovers.</p>
-              <p>Some Tour global parameters can be <code>strings</code> or <code>functions</code> because sometimes the thing you want to expose does not exist when the Tour start.</p>
-              <p> Each <a href="#defaults">#defaults.step</a> parameters specified through <code>new Tour([options])</code> can be overriden at the step level with <code>tour.addStep([options])</code>.</p>
-              <p>The default template can be completely replaced at the Tour level <strong>or even for a single step</strong>. It's a <code>function(step) -> string</code>, so underscore <code>_.template()</code>, jQuery <code>$.tmpl()</code> etc... are supported even if they are not Bootstrap Tour Extended dependencies.</p>
             </div>
+            <p>Bootstrap Tour Extended allows developers to build quickly and easily  <strong>extremely configurable</strong> product tours using Twitter Bootstrap Popovers.</p>
+            <p>Some Tour global parameters can be <code>strings</code> or <code>functions</code> because sometimes the thing you want to expose does not exist when the Tour start.</p>
+            <p> Each <a href="#defaults">#defaults.step</a> parameters specified through <code>new Tour([options])</code> can be overriden at the step level with <code>tour.addStep([options])</code>.</p>
+            <p>The default template can be completely replaced at the Tour level <strong>or even for a single step</strong>. It's a <code>function(step) -> string</code>, so underscore <code>_.template()</code>, jQuery <code>$.tmpl()</code> etc... are supported even if they are not Bootstrap Tour Extended dependencies.</p>
+          </section>
+          <section id="demo">
+            <div class="page-header">
+              <h1>Demo</h1>
+            </div><a href="http://sorich87.github.com/bootstrap-tour/">See the demo from the original version by sorich87</a>
+            <p>I accept pull-requests!</p>
           </section>
           <section id="how">
             <div class="page-header">
               <h1>Getting started</h1>
-              <p>In your web page:</p>
-              <pre><code class="language-javascript">&lt;div id=&quot;a&quot;&gt;&lt;/div&gt;&lt;hr&gt;&lt;div id=&quot;b&quot;&gt;&lt;/div&gt;
+            </div>
+            <p>In your web page:</p>
+            <pre><code class="language-javascript">&lt;div id=&quot;a&quot;&gt;&lt;/div&gt;&lt;hr&gt;&lt;div id=&quot;b&quot;&gt;&lt;/div&gt;
 
 &lt;script src=&quot;jquery.js&quot;&gt;&lt;/script&gt;
 &lt;script src=&quot;bootstrap.tooltip.js&quot;&gt;&lt;/script&gt;
@@ -204,7 +215,9 @@ var tour = new Tour({
    */
 });
 
-//  Add a step
+/**
+ * Add a step
+ */
 tour
   .addStep({
     /**
@@ -230,11 +243,13 @@ tour
      */
   });
   
-// addStep/on/off/one are chainable
+/**
+ * Oh yes, addStep/on/off/one are chainable
+ */
 tour
   .addStep({
     /**
-     * &#35;c does not exist yet but will be created by on(&quot;show&quot;)
+     * &#35;c does not exist yet but will be created by the following &quot;show&quot; event handler
      * @type {String}
      */
     element: &quot;&#35;c&quot;,
@@ -249,7 +264,10 @@ tour
     // Deferred support for asynchronous operation
     var def = $.Deferred();
     
-    // Tell Bootstrap Tour to wait on this promise before displaying the step
+    // Tell Bootstrap Tour to wait for this promise to resolve before displaying the step
+    // Note: in the case of multiple event handler, Bootstrap Tour will wait that all promise are resolved
+    // before showing the step
+    // Note2: e.setPromise() is optional, if no promises were specified the step will be immediately displayed.
     e.setPromise(def.promise());
     
     // &quot;show&quot; is the only event that does not have a &quot;e.element&quot; attribute
@@ -263,7 +281,7 @@ tour
   
 tour
   .on(&quot;show&quot;, function(e){
-    console.log(&quot;Before showing step&quot;, e.step.index);
+    console.log(&quot;Trying to show step&quot;, e.step.index);
   })
   .on(&quot;shown&quot;, function(e){
     console.log(&quot;Step&quot;, e.step.index, &quot;shown&quot;);
@@ -273,23 +291,38 @@ tour
     console.log(&quot;Hidding step&quot;, e.step.index);
   })
   .on(&quot;hidden:step1&quot;, function(e){
-    console.log(&quot;Step&quot;, e.step.index, &quot;is hidden, this action was triggered by&quot;, e.trigger, &quot;the step element was&quot;, e.step.element);
+    console.log(&quot;Step&quot;, 
+        e.step.index, 
+        &quot;is hidden, this action was triggered by&quot;, 
+        e.trigger, 
+        &quot;the resolved step element was&quot;, 
+        e.element);
   })
   .on(&quot;hidden&quot;, function(e){
-    console.log(&quot;Step&quot;, e.step.index, &quot;is hidden&quot;);
+    console.log(&quot;Step&quot;, e.step.index, &quot;is now hidden&quot;);
   })
   .on(&quot;end&quot;, console.log.bind(console, &quot;Tour ended&quot;));
   
+tour.on(&quot;skip&quot;, function(e){
+  console.log(&quot;Bootstrap Tour is skipping step&quot;, 
+    e.step.index,
+    &quot;because this step element&quot;,
+    e.step.element,
+    &quot;was neither found nor visible.&quot;);
+  // Thus this event handler will never be called
+});
+
 // Start the tour
 tour.start();
+
+// One more thing, .start(), .next(), .prev() and .end() all return promises!
 &lt;/script&gt;
 </code></pre>
-            </div>
           </section>
           <section id="who">
             <div class="page-header">
               <h1>Who are you?</h1>
-              <p>My name is Francois-Guillaume Ribreau, I <a href="http://twitter.com/FGRibreau">discover, share (twitter)</a>, <a href="http://blog.fgribreau.com/">learn (blog)</a>, <a href="https://github.com/FGRibreau?tab=repositories">code (github)</a>, <a href="http://bringr.net">d</a><a href="http://redsmin.com">o</a>.</p>
+              <p>My name is Francois-Guillaume Ribreau, I <a href="http://twitter.com/FGRibreau">discover, share (twitter)</a>, <a href="http://blog.fgribreau.com/">learn (blog)</a>, <a href="https://github.com/FGRibreau?tab=repositories">code (github)</a>, <a href="http://bringr.net" data-placement="top" class="bringr">d</a><a href="http://redsmin.com" data-placement="top" class="redsmin">o</a>.</p>
             </div>
           </section>
           <section id="who">
@@ -299,7 +332,6 @@ tour.start();
           </section>
           <section id="Tour">
             <h1>Tour</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">function</div><span>Tour()</span> -> <span>Tour</span>
             </p>
@@ -316,7 +348,7 @@ tour.start();
               <tr>
                 <td>options</td>
                 <td>Object</td>
-                <td>An optional option object</td>
+                <td>An optional option object (see #defaults)</td>
               </tr>
             </tbody>
           </table>
@@ -324,7 +356,6 @@ tour.start();
           </div>
           <section id="dispose">
             <h1>dispose</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.dispose()</span>
             </p>
@@ -333,7 +364,6 @@ tour.start();
           </div>
           <section id="addStep">
             <h1>addStep</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.addStep()</span>
             </p>
@@ -350,7 +380,7 @@ tour.start();
               <tr>
                 <td>step</td>
                 <td>Object</td>
-                <td>An optional object that describe the step</td>
+                <td>An optional object that describe the step (see #stepDefaults)</td>
               </tr>
             </tbody>
           </table>
@@ -358,7 +388,6 @@ tour.start();
           </div>
           <section id="start">
             <h1>start</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.start()</span> -> <span>Promise</span>
             </p>
@@ -383,7 +412,6 @@ tour.start();
           </div>
           <section id="gotoStep">
             <h1>gotoStep</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.gotoStep()</span> -> <span>Deferred</span>
             </p>
@@ -408,7 +436,6 @@ tour.start();
           </div>
           <section id="on">
             <h1>on</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.on()</span>
             </p>
@@ -433,7 +460,6 @@ tour.start();
           </div>
           <section id="one">
             <h1>one</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.one()</span>
             </p>
@@ -458,7 +484,6 @@ tour.start();
           </div>
           <section id="off">
             <h1>off</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.off()</span>
             </p>
@@ -483,7 +508,6 @@ tour.start();
           </div>
           <section id="trigger">
             <h1>trigger</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.trigger()</span>
             </p>
@@ -508,7 +532,6 @@ tour.start();
           </div>
           <section id="next">
             <h1>next</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.next()</span> -> <span>Promise</span>
             </p>
@@ -533,7 +556,6 @@ tour.start();
           </div>
           <section id="prev">
             <h1>prev</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.prev()</span> -> <span>Promise</span>
             </p>
@@ -558,7 +580,6 @@ tour.start();
           </div>
           <section id="end">
             <h1>end</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.end()</span> -> <span>Promise</span>
             </p>
@@ -583,7 +604,6 @@ tour.start();
           </div>
           <section id="ended">
             <h1>ended</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.ended()</span> -> <span>Boolean</span>
             </p>
@@ -592,7 +612,6 @@ tour.start();
           </div>
           <section id="restart">
             <h1>restart</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.restart()</span>
             </p>
@@ -601,7 +620,6 @@ tour.start();
           </div>
           <section id="debugMode">
             <h1>debugMode</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.debugMode()</span>
             </p>
@@ -626,7 +644,6 @@ tour.start();
           </div>
           <section id="defaults">
             <h1>defaults</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-success radius ctx-type">property</div><span>Tour.defaults</span>
             </p>
@@ -635,27 +652,24 @@ tour.start();
           </div>
           <section>
             <h1></h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-inverse radius ctx-type">String</div>
             </p>
           </section>
           <div class="description"><p>name</p> <p>This option is used to build the name of the cookie where the tour state is stored. You can initialize several tours with different names in the same page and application.</p>
-            <pre><code class="language-javascript">name: "tour",</code></pre>
+            <pre><code class="language-javascript">name: &quot;tour&quot;,</code></pre>
           </div>
           <section>
             <h1></h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-inverse radius ctx-type">String</div>
             </p>
           </section>
           <div class="description"><p>How to handle persistence</p> <p>The value can be "Cookie" | "LocalStorage" | "Memory" (default "Memory") Note: the "Cookie" backend requires jquery.cookie.js</p>
-            <pre><code class="language-javascript">persistence: "Memory",</code></pre>
+            <pre><code class="language-javascript">persistence: &quot;Memory&quot;,</code></pre>
           </div>
           <section>
             <h1></h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-inverse radius ctx-type">Boolean</div>
             </p>
@@ -665,19 +679,17 @@ tour.start();
           </div>
           <section>
             <h1></h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-inverse radius ctx-type">Function</div>
             </p>
           </section>
           <div class="description"><p>Specify a function that return a css string</p> 
             <pre><code class="language-javascript">style: function() {
-        return ".popover.bootstrap-tour.expose{z-index:99998;}\n#bootstrap-tour-overlay{background:rgba(0,0,0,0.5);display:none;width:100%;height:100%;position:absolute; top:0; left:0; z-index:99997;}";
+        return &quot;.popover.bootstrap-tour.expose{z-index:99998;}\n#bootstrap-tour-overlay{background:rgba(0,0,0,0.5);display:none;width:100%;height:100%;position:absolute; top:0; left:0; z-index:99997;}&quot;;
       },</code></pre>
           </div>
           <section>
             <h1></h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-inverse radius ctx-type">Object</div>
             </p>
@@ -689,9 +701,8 @@ tour.start();
           </div>
           <section>
             <h1></h1>
-            <h5 class="subheader"></h5>
             <p>
-              <div class="label label-inverse radius ctx-type">String </div>
+              <div class="label label-inverse radius ctx-type">String | Function(step)</div>
             </p>
           </section>
           <div class="description"><p>Default step title</p> 
@@ -699,9 +710,8 @@ tour.start();
           </div>
           <section>
             <h1></h1>
-            <h5 class="subheader"></h5>
             <p>
-              <div class="label label-inverse radius ctx-type">String</div>
+              <div class="label label-inverse radius ctx-type">String | Function(step)</div>
             </p>
           </section>
           <div class="description"><p>Default step content</p> 
@@ -709,17 +719,15 @@ tour.start();
           </div>
           <section>
             <h1></h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-inverse radius ctx-type">String</div>
             </p>
           </section>
           <div class="description"><p>Css class to add to the .popover element</p> <p>Note: if `addClass` is defined at the step level. The two defined `addClass` will be taken into account in the popover</p>
-            <pre><code class="language-javascript">addClass: "",</code></pre>
+            <pre><code class="language-javascript">addClass: &quot;&quot;,</code></pre>
           </div>
           <section>
             <h1></h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-inverse radius ctx-type">Boolean</div>
             </p>
@@ -729,7 +737,6 @@ tour.start();
           </div>
           <section>
             <h1></h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-inverse radius ctx-type">Boolean</div>
             </p>
@@ -739,7 +746,6 @@ tour.start();
           </div>
           <section>
             <h1></h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-inverse radius ctx-type">Function</div>
             </p>
@@ -760,16 +766,15 @@ tour.start();
               </tr>
             </tbody>
           </table>
-          <div class="description"><p>Bootstrap-tour template</p> <p>Navigation template, `.prev`, `.next` and `.end` will be removed at runtime if necessary.</p>
+          <div class="description"><p>Bootstrap Tour step-wide template</p> <p>The template should contain `.prev`, `.next` and `.end` will be removed at runtime by Bootstrap Tour if necessary. The template function can be an underscore template or $.tmpl ... </p>
             <pre><code class="language-javascript">template: function(step) {
-          return "<div class=\"popover\">\n  <div class=\"arrow\"></div>\n  <div class=\"popover-inner\"><h3 class=\"popover-title\"></h3>\n    <div class=\"popover-content\"></div>\n    <div class=\"modal-footer\">\n    <a href=\"#\" class=\"btn end\">End tour</a>\n    <a href=\"" + step.prev + "\" class=\"btn pull-right prev\">Previous</a>\n    <a href=\"" + step.next + "\" class=\"btn pull-right next\">Next</a>\n    </div>\n  </div>\n</div>";
+          return &quot;&lt;div class=\&quot;popover\&quot;&gt;\n  &lt;div class=\&quot;arrow\&quot;&gt;&lt;/div&gt;\n  &lt;div class=\&quot;popover-inner\&quot;&gt;&lt;h3 class=\&quot;popover-title\&quot;&gt;&lt;/h3&gt;\n    &lt;div class=\&quot;popover-content\&quot;&gt;&lt;/div&gt;\n    &lt;div class=\&quot;modal-footer\&quot;&gt;\n    &lt;a href=\&quot;#\&quot; class=\&quot;btn end\&quot;&gt;End tour&lt;/a&gt;\n    &lt;a href=\&quot;&quot; + step.prev + &quot;\&quot; class=\&quot;btn pull-right prev\&quot;&gt;Previous&lt;/a&gt;\n    &lt;a href=\&quot;&quot; + step.next + &quot;\&quot; class=\&quot;btn pull-right next\&quot;&gt;Next&lt;/a&gt;\n    &lt;/div&gt;\n  &lt;/div&gt;\n&lt;/div&gt;&quot;;
         }
       }
     };</code></pre>
           </div>
           <section id="stepDefaults">
             <h1>stepDefaults</h1>
-            <h5 class="subheader"></h5>
             <p>
               <div class="label label-success radius ctx-type">property</div><span>Tour.stepDefaults</span>
             </p>
@@ -778,126 +783,75 @@ tour.start();
           </div>
           <section>
             <h1></h1>
-            <h5 class="subheader"></h5>
             <p>
-              <div class="label label-success radius ctx-type"></div>
+              <div class="label label-inverse radius ctx-type">String</div>
             </p>
           </section>
-          <div class="description"><p>{String} How to position the popover - top | bottom | left | right.</p> 
-            <pre><code class="language-javascript">placement: "right",
-      title: "",
-      content: "",
-      animation: true,
-      reflex: false,
-      addClass: ""
-    };
-
-    return Tour;
-
-  })();
-  Backend = (function() {
-
-    function Backend() {}
-
-    Backend.prototype.dispose = function() {};
-
-    Backend.prototype.setState = function(options, key, value) {};
-
-    Backend.prototype.getState = function(options, key) {};
-
-    return Backend;
-
-  })();
-  Memory = (function(_super) {
-
-    __extends(Memory, _super);
-
-    function Memory(options) {
-      this.ns = "__db_" + options.name + "__";
-      window[this.ns] = {};
-    }
-
-    Memory.prototype._avail = function() {
-      return window.hasOwnProperty(this.ns);
-    };
-
-    Memory.prototype.setState = function(options, key, value) {
-      if (!this._avail()) {
-        return;
-      }
-      return window[this.ns][key] = value;
-    };
-
-    Memory.prototype.getState = function(options, key) {
-      if (!this._avail()) {
-        return;
-      }
-      return window[this.ns][key] || null;
-    };
-
-    Memory.prototype.dispose = function() {
-      return delete window[this.ns];
-    };
-
-    return Memory;
-
-  })(Backend);
-  Cookie = (function(_super) {
-
-    __extends(Cookie, _super);
-
-    function Cookie(options) {
-      this.ns = "" + options.name + "_";
-    }
-
-    Cookie.prototype.setState = function(options, key, value) {
-      return $.cookie("" + this.ns + key, value, {
-        expires: 36500,
-        path: '/'
-      });
-    };
-
-    Cookie.prototype.getState = function(options, key) {
-      return $.cookie("" + this.ns + key);
-    };
-
-    return Cookie;
-
-  })(Backend);
-  LocalStorage = (function(_super) {
-
-    __extends(LocalStorage, _super);
-
-    function LocalStorage(options) {
-      this.ns = "" + options.name + "_";
-    }
-
-    LocalStorage.prototype.setState = function(options, key, value) {
-      return window.localStorage.setItem("" + this.ns + key, JSON.stringify(value));
-    };
-
-    LocalStorage.prototype.getState = function(options, key) {
-      var item;
-      item = null;
-      try {
-        item = window.localStorage.getItem("" + this.ns + key);
-        return JSON.parse(item);
-      } catch (err) {
-        console.error(err, item);
-        return null;
-      }
-    };
-
-    return LocalStorage;
-
-  })(Backend);
-  backend = {
-    Memory: Memory,
-    Cookie: Cookie,
-    LocalStorage: LocalStorage
-  };
-  return window.Tour = Tour;
-})(jQuery, window);</code></pre>
+          <div class="description"><p>Path to the page on which the step should be shown. this allows you<br />to build tours that span several pages!</p> 
+            <pre><code class="language-javascript">path: &quot;&quot;,</code></pre>
+          </div>
+          <section>
+            <h1></h1>
+            <p>
+              <div class="label label-inverse radius ctx-type">jQuery-object | Css-Selector | Function()</div>
+            </p>
+          </section>
+          <div class="description"><p>HTML element on which the step popover should be shown.</p> 
+            <pre><code class="language-javascript">element: null,</code></pre>
+          </div>
+          <section>
+            <h1></h1>
+            <p>
+              <div class="label label-inverse radius ctx-type">String</div>
+            </p>
+          </section>
+          <div class="description"><p>How to position the popover - top | bottom | left | right.</p> 
+            <pre><code class="language-javascript">placement: &quot;right&quot;,</code></pre>
+          </div>
+          <section>
+            <h1></h1>
+            <p>
+              <div class="label label-inverse radius ctx-type">String | Function(step)</div>
+            </p>
+          </section>
+          <div class="description"><p>Step title</p> 
+            <pre><code class="language-javascript">title: &quot;&quot;,</code></pre>
+          </div>
+          <section>
+            <h1></h1>
+            <p>
+              <div class="label label-inverse radius ctx-type">String | Function(step)</div>
+            </p>
+          </section>
+          <div class="description"><p>Step content</p> <p>Note: defining `step.title` and `step.content` functions at the tour level allow the developper to separate step title/content from the step behaviour.</p>
+            <pre><code class="language-javascript">content: &quot;&quot;,</code></pre>
+          </div>
+          <section>
+            <h1></h1>
+            <p>
+              <div class="label label-inverse radius ctx-type">Boolean</div>
+            </p>
+          </section>
+          <div class="description"><p>Apply a css fade transition to the tooltip.</p> 
+            <pre><code class="language-javascript">animation: true,</code></pre>
+          </div>
+          <section>
+            <h1></h1>
+            <p>
+              <div class="label label-inverse radius ctx-type">Boolean</div>
+            </p>
+          </section>
+          <div class="description"><p>Enable the reflex mode, click on the element to continue the tour</p> 
+            <pre><code class="language-javascript">reflex: false,</code></pre>
+          </div>
+          <section>
+            <h1></h1>
+            <p>
+              <div class="label label-inverse radius ctx-type">String</div>
+            </p>
+          </section>
+          <div class="description"><p>Css class to add to the .popover element for this step only</p> 
+            <pre><code class="language-javascript">addClass: &quot;&quot;</code></pre>
           </div>
         </div>
       </div>
@@ -905,7 +859,7 @@ tour.start();
     <footer class="footer">
       <div class="container">
         <p>Documentation generated with <a href="https://github.com/FGRibreau/doxx">Doxx </a>created by <a href="https://twitter.com/FGRibreau" data-show-count="false" class="twitter-follow-button">Francois-Guillaume Ribreau</a></p>
-        <p>Doxx is sponsored by <a href="http://bringr.net/?btt" title="Outil d'analyse des réseaux sociaux" class="bringr">Bringr </a>and <a href="https://redsmin.com/?btt" title="Full Redis GUI" class="redsmin">Redsmin</a></p>
+        <p>Doxx is sponsored by <a href="http://bringr.net/?btt" data-placement="top" title="Outil d'analyse des réseaux sociaux" class="bringr">Bringr </a>and <a href="https://redsmin.com/?btt" data-placement="top" title="Full Redis GUI" class="redsmin">Redsmin</a></p>
         <p>Theme borrowed from Twitter Bootstrap</p>
       </div>
     </footer>
@@ -914,6 +868,8 @@ tour.start();
     <script src="http://leaverou.github.com/prefixfree/prefixfree.js"></script>
     <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-transition.js"></script>
     <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-scrollspy.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-tooltip.js"></script>
+    <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-popover.js"></script>
     <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-dropdown.js"></script>
     <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-collapse.js"></script>
     <script src="http://twitter.github.com/bootstrap/assets/js/bootstrap-affix.js"></script>
@@ -939,6 +895,17 @@ tour.start();
           , bottom: 127
           }
         });
+        
+        var c = {trigger:'hover', html:true};
+        $('.bringr').popover($.extend({
+          title:"Outil d'analyse des réseaux sociaux",
+          content:"<img src=\"http://farm9.staticflickr.com/8358/8376503257_0f71beb262.jpg\"/>"
+        }, c));
+        
+        $('.redsmin').popover($.extend({
+          title:"Fully featured GUI for Redis",
+          content:"<img src=\"http://farm9.staticflickr.com/8475/8376696703_c96da066e3.jpg\"/>"
+        }, c));
       })
     </script>
   </body>

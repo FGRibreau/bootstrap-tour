@@ -48,7 +48,7 @@
           "Object"
         ],
         "name": "options",
-        "description": "An optional option object"
+        "description": "An optional option object (see #defaults)"
       },
       {
         "type": "see",
@@ -106,7 +106,7 @@
           "Object"
         ],
         "name": "step",
-        "description": "An optional object that describe the step"
+        "description": "An optional object that describe the step (see #stepDefaults)"
       },
       {
         "type": "see",
@@ -1865,7 +1865,7 @@
         "type": "type",
         "types": [
           "String",
-          ""
+          "Function(step)"
         ]
       }
     ],
@@ -1883,7 +1883,8 @@
       {
         "type": "type",
         "types": [
-          "String"
+          "String",
+          "Function(step)"
         ]
       }
     ],
@@ -1966,15 +1967,15 @@
     "tags": [
       {
         "type": "description",
-        "string": "Navigation template, `.prev`, `.next` and `.end`"
+        "string": "The template should contain `.prev`, `.next` and `.end`"
       },
       {
         "type": "",
-        "string": "will be removed at runtime if necessary."
+        "string": "will be removed at runtime by Bootstrap Tour if necessary."
       },
       {
         "type": "",
-        "string": "The template can be an underscore template or $.tmpl ..."
+        "string": "The template function can be an underscore template or $.tmpl ..."
       },
       {
         "type": "",
@@ -2003,8 +2004,8 @@
       }
     ],
     "description": {
-      "full": "<p>Bootstrap-tour template</p>",
-      "summary": "<p>Bootstrap-tour template</p>",
+      "full": "<p>Bootstrap Tour step-wide template</p>",
+      "summary": "<p>Bootstrap Tour step-wide template</p>",
       "body": ""
     },
     "isPrivate": false,
@@ -2027,7 +2028,7 @@
     },
     "isPrivate": false,
     "ignore": false,
-    "code": "Tour.stepDefaults = {\n      index: 0,\n      path: \"\",\n      element: null,",
+    "code": "Tour.stepDefaults = {",
     "ctx": {
       "type": "property",
       "receiver": "Tour",
@@ -2037,13 +2038,191 @@
     }
   },
   {
-    "tags": [],
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "String"
+        ]
+      }
+    ],
     "description": {
-      "full": "<p>{String} How to position the popover - top | bottom | left | right.</p>",
-      "summary": "<p>{String} How to position the popover - top | bottom | left | right.</p>",
+      "full": "<p>Path to the page on which the step should be shown. this allows you<br />to build tours that span several pages!</p>",
+      "summary": "<p>Path to the page on which the step should be shown. this allows you<br />to build tours that span several pages!</p>",
       "body": ""
     },
+    "isPrivate": false,
     "ignore": false,
-    "code": "placement: \"right\",\n      title: \"\",\n      content: \"\",\n      animation: true,\n      reflex: false,\n      addClass: \"\"\n    };\n\n    return Tour;\n\n  })();\n  Backend = (function() {\n\n    function Backend() {}\n\n    Backend.prototype.dispose = function() {};\n\n    Backend.prototype.setState = function(options, key, value) {};\n\n    Backend.prototype.getState = function(options, key) {};\n\n    return Backend;\n\n  })();\n  Memory = (function(_super) {\n\n    __extends(Memory, _super);\n\n    function Memory(options) {\n      this.ns = \"__db_\" + options.name + \"__\";\n      window[this.ns] = {};\n    }\n\n    Memory.prototype._avail = function() {\n      return window.hasOwnProperty(this.ns);\n    };\n\n    Memory.prototype.setState = function(options, key, value) {\n      if (!this._avail()) {\n        return;\n      }\n      return window[this.ns][key] = value;\n    };\n\n    Memory.prototype.getState = function(options, key) {\n      if (!this._avail()) {\n        return;\n      }\n      return window[this.ns][key] || null;\n    };\n\n    Memory.prototype.dispose = function() {\n      return delete window[this.ns];\n    };\n\n    return Memory;\n\n  })(Backend);\n  Cookie = (function(_super) {\n\n    __extends(Cookie, _super);\n\n    function Cookie(options) {\n      this.ns = \"\" + options.name + \"_\";\n    }\n\n    Cookie.prototype.setState = function(options, key, value) {\n      return $.cookie(\"\" + this.ns + key, value, {\n        expires: 36500,\n        path: '/'\n      });\n    };\n\n    Cookie.prototype.getState = function(options, key) {\n      return $.cookie(\"\" + this.ns + key);\n    };\n\n    return Cookie;\n\n  })(Backend);\n  LocalStorage = (function(_super) {\n\n    __extends(LocalStorage, _super);\n\n    function LocalStorage(options) {\n      this.ns = \"\" + options.name + \"_\";\n    }\n\n    LocalStorage.prototype.setState = function(options, key, value) {\n      return window.localStorage.setItem(\"\" + this.ns + key, JSON.stringify(value));\n    };\n\n    LocalStorage.prototype.getState = function(options, key) {\n      var item;\n      item = null;\n      try {\n        item = window.localStorage.getItem(\"\" + this.ns + key);\n        return JSON.parse(item);\n      } catch (err) {\n        console.error(err, item);\n        return null;\n      }\n    };\n\n    return LocalStorage;\n\n  })(Backend);\n  backend = {\n    Memory: Memory,\n    Cookie: Cookie,\n    LocalStorage: LocalStorage\n  };\n  return window.Tour = Tour;\n})(jQuery, window);"
+    "code": "path: \"\","
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "jQuery-object",
+          "Css-Selector",
+          "Function()"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>HTML element on which the step popover should be shown.</p>",
+      "summary": "<p>HTML element on which the step popover should be shown.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "element: null,"
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "String"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>How to position the popover - top | bottom | left | right.</p>",
+      "summary": "<p>How to position the popover - top | bottom | left | right.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "placement: \"right\","
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "String",
+          "Function(step)"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Step title</p>",
+      "summary": "<p>Step title</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "title: \"\","
+  },
+  {
+    "tags": [
+      {
+        "type": "description",
+        "string": "Note: defining `step.title` and `step.content` functions at the tour level"
+      },
+      {
+        "type": "",
+        "string": "allow the developper to separate step title/content from the step behaviour."
+      },
+      {
+        "type": "type",
+        "types": [
+          "String",
+          "Function(step)"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Step content</p>",
+      "summary": "<p>Step content</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "content: \"\","
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "Boolean"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Apply a css fade transition to the tooltip.</p>",
+      "summary": "<p>Apply a css fade transition to the tooltip.</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "animation: true,"
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "Boolean"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Enable the reflex mode, click on the element to continue the tour</p>",
+      "summary": "<p>Enable the reflex mode, click on the element to continue the tour</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "reflex: false,"
+  },
+  {
+    "tags": [
+      {
+        "type": "type",
+        "types": [
+          "String"
+        ]
+      }
+    ],
+    "description": {
+      "full": "<p>Css class to add to the .popover element for this step only</p>",
+      "summary": "<p>Css class to add to the .popover element for this step only</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "addClass: \"\""
+  },
+  {
+    "tags": [
+      {
+        "type": "ignore",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>...</p>",
+      "summary": "<p>...</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "};\n\n    return Tour;\n\n  })();"
+  },
+  {
+    "tags": [
+      {
+        "type": "ignore",
+        "string": ""
+      }
+    ],
+    "description": {
+      "full": "<p>Ignore backends</p>",
+      "summary": "<p>Ignore backends</p>",
+      "body": ""
+    },
+    "isPrivate": false,
+    "ignore": false,
+    "code": "Backend = (function() {\n\n    function Backend() {}\n\n    Backend.prototype.dispose = function() {};\n\n    Backend.prototype.setState = function(options, key, value) {};\n\n    Backend.prototype.getState = function(options, key) {};\n\n    return Backend;\n\n  })();\n  Memory = (function(_super) {\n\n    __extends(Memory, _super);\n\n    function Memory(options) {\n      this.ns = \"__db_\" + options.name + \"__\";\n      window[this.ns] = {};\n    }\n\n    Memory.prototype._avail = function() {\n      return window.hasOwnProperty(this.ns);\n    };\n\n    Memory.prototype.setState = function(options, key, value) {\n      if (!this._avail()) {\n        return;\n      }\n      return window[this.ns][key] = value;\n    };\n\n    Memory.prototype.getState = function(options, key) {\n      if (!this._avail()) {\n        return;\n      }\n      return window[this.ns][key] || null;\n    };\n\n    Memory.prototype.dispose = function() {\n      return delete window[this.ns];\n    };\n\n    return Memory;\n\n  })(Backend);\n  Cookie = (function(_super) {\n\n    __extends(Cookie, _super);\n\n    function Cookie(options) {\n      this.ns = \"\" + options.name + \"_\";\n    }\n\n    Cookie.prototype.setState = function(options, key, value) {\n      return $.cookie(\"\" + this.ns + key, value, {\n        expires: 36500,\n        path: '/'\n      });\n    };\n\n    Cookie.prototype.getState = function(options, key) {\n      return $.cookie(\"\" + this.ns + key);\n    };\n\n    return Cookie;\n\n  })(Backend);\n  LocalStorage = (function(_super) {\n\n    __extends(LocalStorage, _super);\n\n    function LocalStorage(options) {\n      this.ns = \"\" + options.name + \"_\";\n    }\n\n    LocalStorage.prototype.setState = function(options, key, value) {\n      return window.localStorage.setItem(\"\" + this.ns + key, JSON.stringify(value));\n    };\n\n    LocalStorage.prototype.getState = function(options, key) {\n      var item;\n      item = null;\n      try {\n        item = window.localStorage.getItem(\"\" + this.ns + key);\n        return JSON.parse(item);\n      } catch (err) {\n        console.error(err, item);\n        return null;\n      }\n    };\n\n    return LocalStorage;\n\n  })(Backend);\n  backend = {\n    Memory: Memory,\n    Cookie: Cookie,\n    LocalStorage: LocalStorage\n  };\n  return window.Tour = Tour;\n})(jQuery, window);"
   }
 ]

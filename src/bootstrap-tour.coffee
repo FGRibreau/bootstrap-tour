@@ -18,7 +18,7 @@
 
     ###*
      * Create a tour
-     * @param  {Object} options An optional option object
+     * @param  {Object} options An optional option object (see #defaults)
      * @see Tour.defaults
      * @constructor
      * @return {Tour}
@@ -64,7 +64,7 @@
 
     ###*
      * Add a step to the tour
-     * @param {Object} step An optional object that describe the step
+     * @param {Object} step An optional object that describe the step  (see #stepDefaults)
      * @see  Tour.stepDefaults
     ###
     addStep: (step) ->
@@ -739,13 +739,13 @@
       step:
         ###*
          * Default step title
-         * @type {String, Function(step)}
+         * @type {String|Function(step)}
         ###
         title:null
 
         ###*
          * Default step content
-         * @type {String | Function(step)}
+         * @type {String|Function(step)}
         ###
         content:null
 
@@ -773,10 +773,10 @@
         reflex: false
 
         ###*
-         * Bootstrap-tour template
-         * @description Navigation template, `.prev`, `.next` and `.end`
-         *              will be removed at runtime if necessary.
-         *              The template can be an underscore template or $.tmpl ...
+         * Bootstrap Tour step-wide template
+         * @description The template should contain `.prev`, `.next` and `.end`
+         *              will be removed at runtime by Bootstrap Tour if necessary.
+         *              The template function can be an underscore template or $.tmpl ...
          *
          * @param  {Object} step The step to render
          * @type   {Function}
@@ -832,53 +832,62 @@
      * @type {Object}
     ###
     Tour.stepDefaults =
-      #
-      #
-      #
-      index: 0
-
-      #
-      # {String} Path to the page on which the step should be shown. this allows you
-      # to build tours that span several pages!
-      #
+      ###*
+       * Path to the page on which the step should be shown. this allows you
+       * to build tours that span several pages!
+       * @type {String}
+      ###
       path: ""
 
-      #
-      # {jQuery | Css Selector | Function} HTML element on which the step popover
-      # should be shown.
-      #
+      ###*
+       * HTML element on which the step popover should be shown.
+       * @type {jQuery-object|Css-Selector|Function()}
+      ###
       element:null
 
       ###*
-       * {String} How to position the popover - top | bottom | left | right.
+       * How to position the popover - top | bottom | left | right.
+       * @type {String}
       ###
       placement: "right"
 
-      #
-      # {String | Function(step)} Step title
-      #
+      ###*
+       * Step title
+       * @type {String|Function(step)}
+      ###
       title: ""
 
-      #
-      # {String | Function(step)} Step content
-      #
+      ###*
+       * Step content
+       * @description Note: defining `step.title` and `step.content` functions at the tour level
+       *              allow the developper to separate step title/content from the step behaviour.
+       * @type {String|Function(step)}
+      ###
       content: ""
 
-      #
-      # {Boolean} Apply a css fade transition to the tooltip.
-      #
+      ###*
+       * Apply a css fade transition to the tooltip.
+       * @type {Boolean}
+      ###
       animation: true
 
-      #
-      # {Boolean} Enable the reflex mode, click on the element to continue the tour
-      #
+      ###*
+       * Enable the reflex mode, click on the element to continue the tour
+       * @type {Boolean}
+      ###
       reflex: false
 
 
-      #
-      # {String} Css class to add to the .popover element for this step only
-      #
+      ###*
+       * Css class to add to the .popover element for this step only
+       * @type {String}
+      ###
       addClass:""
+
+      ###*
+       * ...
+       * @ignore
+      ###
 
       # #
       # # {Function} Function to execute right before each step is shown.
@@ -901,6 +910,11 @@
       # # {Function} Function to execute on end
       # #
       # onEnd: (tour, event) ->
+
+  ###*
+   * Ignore backends
+   * @ignore
+  ###
   class Backend
     dispose: () ->
     setState: (options, key, value) ->

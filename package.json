@@ -30,8 +30,7 @@
     "grunt-coffee": "0.0.6",
     "dox": "~0.4.1",
     "grunt-shell": "~0.1.4",
-    "markdown": "~0.4.0",
-    "marked": "~0.2.7"
+    "doxx": "~0.5.7"
   },
   "keywords": []
 }
