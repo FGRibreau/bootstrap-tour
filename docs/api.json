@@ -109,6 +109,13 @@
         "description": "An optional object that describe the step (see #stepDefaults)"
       },
       {
+        "type": "return",
+        "types": [
+          "Tour"
+        ],
+        "description": ""
+      },
+      {
         "type": "see",
         "local": "Tour.stepDefaults",
         "visibility": "Tour.stepDefaults"
@@ -239,6 +246,13 @@
         ],
         "name": "handler",
         "description": "A function to execute when the event is triggered."
+      },
+      {
+        "type": "return",
+        "types": [
+          "Tour"
+        ],
+        "description": ""
       }
     ],
     "description": {
@@ -292,6 +306,13 @@
         "string": ""
       },
       {
+        "type": "return",
+        "types": [
+          "Tour"
+        ],
+        "description": ""
+      },
+      {
         "type": "see:",
         "string": "#on"
       }
@@ -329,6 +350,13 @@
         ],
         "name": "handler",
         "description": "A handler function previously attached for the event(s), or the special value false."
+      },
+      {
+        "type": "return",
+        "types": [
+          "Tour"
+        ],
+        "description": ""
       }
     ],
     "description": {
@@ -368,6 +396,13 @@
         ],
         "name": "e",
         "description": "Event object"
+      },
+      {
+        "type": "return",
+        "types": [
+          "Tour"
+        ],
+        "description": ""
       }
     ],
     "description": {
@@ -377,7 +412,7 @@
     },
     "isPrivate": false,
     "ignore": false,
-    "code": "Tour.prototype.trigger = function(name, e) {\n      if (e == null) {\n        e = {};\n      }\n      this._evt.triggerHandler(this._initEvent(name, e));\n      if (e.step) {\n        return this._evt.triggerHandler(this._initEvent(\"\" + name + \":step\" + e.step.index, e));\n      }\n    };",
+    "code": "Tour.prototype.trigger = function(name, e) {\n      if (e == null) {\n        e = {};\n      }\n      this._evt.triggerHandler(this._initEvent(name, e));\n      if (e.step) {\n        this._evt.triggerHandler(this._initEvent(\"\" + name + \":step\" + e.step.index, e));\n      }\n      return this;\n    };",
     "ctx": {
       "type": "method",
       "constructor": "Tour",
@@ -515,12 +550,21 @@
     }
   },
   {
-    "tags": [],
+    "tags": [
+      {
+        "type": "return",
+        "types": [
+          "Promise"
+        ],
+        "description": "The promise will be resolved when the first step will be shown"
+      }
+    ],
     "description": {
       "full": "<p>Restart the tour</p>",
       "summary": "<p>Restart the tour</p>",
       "body": ""
     },
+    "isPrivate": false,
     "ignore": false,
     "code": "Tour.prototype.restart = function() {\n      this._setState(\"current_step\", null);\n      this._setState(\"end\", null);\n      this._setCurrentStep(0);\n      return this.start();\n    };",
     "ctx": {
@@ -540,6 +584,13 @@
         ],
         "name": "activated",
         "description": "If true, all `Tour` emitted events will be displayed in console"
+      },
+      {
+        "type": "return",
+        "types": [
+          "Tour"
+        ],
+        "description": ""
       }
     ],
     "description": {
@@ -549,7 +600,7 @@
     },
     "isPrivate": false,
     "ignore": false,
-    "code": "Tour.prototype.debugMode = function(activated) {\n      var evtName, _i, _len, _ref, _results;\n      _ref = [\"show\", \"shown\", \"hide\", \"hidden\", \"end\"];\n      _results = [];\n      for (_i = 0, _len = _ref.length; _i < _len; _i++) {\n        evtName = _ref[_i];\n        _results.push(this.on(evtName, $.proxy(this._debug, this, evtName)));\n      }\n      return _results;\n    };",
+    "code": "Tour.prototype.debugMode = function(activated) {\n      var evtName, _i, _len, _ref;\n      _ref = [\"show\", \"shown\", \"hide\", \"hidden\", \"end\"];\n      for (_i = 0, _len = _ref.length; _i < _len; _i++) {\n        evtName = _ref[_i];\n        this.on(evtName, $.proxy(this._debug, this, evtName));\n      }\n      return this;\n    };",
     "ctx": {
       "type": "method",
       "constructor": "Tour",

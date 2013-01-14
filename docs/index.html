@@ -194,19 +194,19 @@ var tour = new Tour({
 tour
   .addStep({
     /**
-     * {jQuery | Css Selector | Function} HTML element on which the step popover
+     * {jQuery | Css Selector | Function} HTML element on which the step popover will be shown
      * @type {String}
      */
     element:   &quot;&#35;a&quot;,   
     
     /**
-     * {String} How to position the popover - top | bottom | left | right.
+     * {String} Popover position - top | bottom | left | right.
      * @type {String}
      */
     placement: &quot;bottom&quot;,
     
     /**
-     * Title of the popover
+     * Popover title
      * @type {String | Function}
      */
     title:     &quot;Hello world!&quot;
@@ -217,7 +217,7 @@ tour
   });
   
 /**
- * Oh yes, addStep/on/off/one are chainable
+ * Oh yes, addStep/on/off/one/trigger are chainable
  */
 tour
   .addStep({

@@ -228,19 +228,19 @@ var tour = new Tour({
 tour
   .addStep({
     /**
-     * {jQuery | Css Selector | Function} HTML element on which the step popover
+     * {jQuery | Css Selector | Function} HTML element on which the step popover will be shown
      * @type {String}
      */
     element:   &quot;&#35;a&quot;,   
     
     /**
-     * {String} How to position the popover - top | bottom | left | right.
+     * {String} Popover position - top | bottom | left | right.
      * @type {String}
      */
     placement: &quot;bottom&quot;,
     
     /**
-     * Title of the popover
+     * Popover title
      * @type {String | Function}
      */
     title:     &quot;Hello world!&quot;
@@ -251,7 +251,7 @@ tour
   });
   
 /**
- * Oh yes, addStep/on/off/one are chainable
+ * Oh yes, addStep/on/off/one/trigger are chainable
  */
 tour
   .addStep({
@@ -372,7 +372,7 @@ tour.start();
           <section id="addStep">
             <h1>addStep</h1>
             <p>
-              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.addStep()</span>
+              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.addStep()</span> -> <span>Tour</span>
             </p>
           </section>
           <table class="table table-bordered table-striped">
@@ -444,7 +444,7 @@ tour.start();
           <section id="on">
             <h1>on</h1>
             <p>
-              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.on()</span>
+              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.on()</span> -> <span>Tour</span>
             </p>
           </section>
           <table class="table table-bordered table-striped">
@@ -468,7 +468,7 @@ tour.start();
           <section id="one">
             <h1>one</h1>
             <p>
-              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.one()</span>
+              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.one()</span> -> <span>Tour</span>
             </p>
           </section>
           <table class="table table-bordered table-striped">
@@ -492,7 +492,7 @@ tour.start();
           <section id="off">
             <h1>off</h1>
             <p>
-              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.off()</span>
+              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.off()</span> -> <span>Tour</span>
             </p>
           </section>
           <table class="table table-bordered table-striped">
@@ -516,7 +516,7 @@ tour.start();
           <section id="trigger">
             <h1>trigger</h1>
             <p>
-              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.trigger()</span>
+              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.trigger()</span> -> <span>Tour</span>
             </p>
           </section>
           <table class="table table-bordered table-striped">
@@ -620,7 +620,7 @@ tour.start();
           <section id="restart">
             <h1>restart</h1>
             <p>
-              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.restart()</span>
+              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.restart()</span> -> <span>Promise</span>
             </p>
           </section>
           <div class="description"><p>Restart the tour</p> 
@@ -628,7 +628,7 @@ tour.start();
           <section id="debugMode">
             <h1>debugMode</h1>
             <p>
-              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.debugMode()</span>
+              <div class="label label-info radius ctx-type">method</div><span>Tour.prototype.debugMode()</span> -> <span>Tour</span>
             </p>
           </section>
           <table class="table table-bordered table-striped">

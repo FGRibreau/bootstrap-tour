@@ -65,6 +65,7 @@
     ###*
      * Add a step to the tour
      * @param {Object} step An optional object that describe the step  (see #stepDefaults)
+     * @return {Tour}
      * @see  Tour.stepDefaults
     ###
     addStep: (step) ->
@@ -118,6 +119,7 @@
      * @param  {String}   data     Data to be passed to the handler in event.data when an event is triggered.
      * @optional
      * @param  {Function} handler  A function to execute when the event is triggered.
+     * @return {Tour}
     ###
     on:(event, selector, data, handler) ->
 
@@ -128,6 +130,7 @@
      * @optional
      * @param {Function} handler A function to execute at the time the event is triggered.
      * @optional
+     * @return {Tour}
      * see: #on
     ###
     one:(event, data, handler) ->
@@ -136,6 +139,7 @@
      * Remove an event handler.
      * @param  {String} event     Event name
      * @param  {Function} handler A handler function previously attached for the event(s), or the special value false.
+     * @return {Tour}
     ###
     off:(event, handler) ->
 
@@ -144,10 +148,12 @@
      * @param  {String} name Event name (e.g. "show", "shown", "hide", "hidden", "skip")
      * @optional
      * @param {Object} e Event object
+     * @return {Tour}
     ###
     trigger:(name, e = {}) ->
       @_evt.triggerHandler(@_initEvent(name, e))
       @_evt.triggerHandler(@_initEvent("#{name}:step#{e.step.index}", e)) if e.step
+      @
 
     ###*
      * Hide current step and show next step
@@ -201,6 +207,7 @@
 
     ###*
      * Restart the tour
+     * @return {Promise} The promise will be resolved when the first step will be shown
     ###
     restart: ->
       @_setState("current_step", null)
@@ -208,13 +215,14 @@
       @_setCurrentStep(0)
       @start()
 
-
     ###*
      * Switch debug mode
      * @param  {Boolean} activated If true, all `Tour` emitted events will be displayed in console
+     * @return {Tour}
     ###
     debugMode: (activated) ->
       @on(evtName, $.proxy(@_debug, @, evtName)) for evtName in ["show", "shown","hide","hidden", "end"]
+      @
 
     ###*
      * Get a step by its indice
