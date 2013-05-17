@@ -85,19 +85,19 @@
       # Go to next step after click on element with class .next
       $(document).off("click.bootstrap-tour",".popover.bootstrap-tour .next").on "click.bootstrap-tour", ".popover.bootstrap-tour .next", (e) =>
         e.preventDefault()
-        return if not $(e.currentTarget).is(':enabled')
+        return if not $(e.currentTarget).is(':not([disabled])')
         @next(trigger:'popover')
 
       # Go to previous step after click on element with class .prev
       $(document).off("click.bootstrap-tour",".popover.bootstrap-tour .prev").on "click.bootstrap-tour", ".popover.bootstrap-tour .prev", (e) =>
         e.preventDefault()
-        return if not $(e.currentTarget).is(':enabled')
+        return if not $(e.currentTarget).is(':not([disabled])')
         @prev(trigger:'popover')
 
       # End tour after click on element with class .end
       $(document).off("click.bootstrap-tour",".popover.bootstrap-tour .end").on "click.bootstrap-tour", ".popover.bootstrap-tour .end", (e) =>
         e.preventDefault()
-        return if not $(e.currentTarget).is(':enabled')
+        return if not $(e.currentTarget).is(':not([disabled])')
         @end(trigger:'popover')
 
       @_setupKeyboardNavigation()
