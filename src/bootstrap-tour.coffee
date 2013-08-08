@@ -290,6 +290,7 @@
     ###
     _showStep: (i, def) ->
       step = @_getStep(i)
+      direction = if i >= @_current then "next" else "prev"
 
       unless step
         def.reject("Step #{i} undefined") if def
@@ -313,7 +314,7 @@
         # If step element is hidden or does not exist, skip step
         if $el.length is 0 or not $el.is(":visible")
           @trigger("skip", element:$el, step:step)
-          @next(def:def)
+          @[direction](def:def)
           return
 
         # Show popover
