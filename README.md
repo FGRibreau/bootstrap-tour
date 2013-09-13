@@ -23,7 +23,7 @@ Bootstrap Tour Extended
 - `onHide`, `onShow`, `onShown` callbacks at the step level should not override `onHide`, `onShow`, `onShown` at the tour level
 
 ## NPM
-Install with `npm install bootstrap-tour`
+Install with `npm install bootstrap-tour2`
 
 ## Release History
 v0.1.0 - Initial commit
