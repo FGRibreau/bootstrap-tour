@@ -25,12 +25,13 @@
     "test": "grunt test"
   },
   "devDependencies": {
-    "grunt": "~0.3.15",
+    "grunt": "~0.4.1",
     "coffee-script": "~1.4.0",
     "grunt-coffee": "0.0.6",
     "dox": "~0.4.1",
     "grunt-shell": "~0.1.4",
-    "doxx": "~0.5.7"
+    "doxx": "~0.5.7",
+    "grunt-cli": "~0.1.9"
   },
   "keywords": []
 }
