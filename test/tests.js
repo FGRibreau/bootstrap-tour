@@ -899,3 +899,7 @@ test("_getProp should select the right function", function() {
   deepEqual(this.tour._getProp(a, b, "template"), true);
   return deepEqual(this.tour._getProp(b, a, "template"), true);
 });
+
+/*
+//@ sourceMappingURL=tests.js.map
+*/

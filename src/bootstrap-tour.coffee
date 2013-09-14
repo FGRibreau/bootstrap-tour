@@ -758,7 +758,6 @@
         ###
         content:null
 
-
         ###*
          * Css class to add to the .popover element
          * @description Note: if `addClass` is defined at the step level.
@@ -840,7 +839,7 @@
      * addStep default parameters
      * @type {Object}
     ###
-    Tour.stepDefaults =
+    Tour.stepDefaults = {
       ###*
        * Path to the page on which the step should be shown. this allows you
        * to build tours that span several pages!
@@ -886,7 +885,6 @@
       ###
       reflex: false
 
-
       ###*
        * Css class to add to the .popover element for this step only
        * @type {String}
@@ -919,6 +917,7 @@
       # # {Function} Function to execute on end
       # #
       # onEnd: (tour, event) ->
+    }
 
   ###*
    * Ignore backends

@@ -1,6 +1,6 @@
 /*global module:false*/
 module.exports = function(grunt) {
-  // grunt.loadNpmTasks('grunt-coffee');
+  grunt.loadNpmTasks('grunt-contrib-coffee');
   grunt.loadNpmTasks('grunt-shell');
 
   // Project configuration.
@@ -23,17 +23,25 @@ module.exports = function(grunt) {
     },
     coffee: {
       lib: {
+        expand: true,
+        flatten: true,
         src: 'src/*.coffee',
         dest: 'lib/',
+        ext: '.js',
         options: {
-            bare: true
+            bare: true,
+            sourceMap:true
         }
       },
       test: {
+        expand: true,
+        flatten: true,
         src: 'test/*.coffee',
         dest: 'test/',
+        ext: '.js',
         options: {
-            bare: true
+            bare: true,
+            sourceMap:true
         }
       }
     },
@@ -87,6 +95,6 @@ module.exports = function(grunt) {
 
   // Default task.
   grunt.registerTask('default', 'lint qunit concat min');
-  grunt.registerTask('compile', 'coffee:lib coffee:test');
+  grunt.registerTask('compile', ['coffee:lib','coffee:test']);
 
 };
