@@ -1,9 +1,9 @@
 Bootstrap Tour Extended
 ------------
+[![Gittip](http://badgr.co/gittip/fgribreau.png)](https://www.gittip.com/fgribreau/)
 
 ## [Documentation](http://fgribreau.github.com/bootstrap-tour/docs/bootstrap-tour.js.html)
 
-[![Gittip](http://badgr.co/gittip/fgribreau.png)](https://www.gittip.com/fgribreau/)
 
 ### Improvement
 - `Tour` constructor now accept a `template` attribute thus the `labels.*` attribute has been removed.
