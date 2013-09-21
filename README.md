@@ -1,6 +1,5 @@
-Bootstrap Tour Extended
+Bootstrap Tour Extended [![Gittip](http://badgr.co/gittip/fgribreau.png)](https://www.gittip.com/fgribreau/)
 ------------
-[![Gittip](http://badgr.co/gittip/fgribreau.png)](https://www.gittip.com/fgribreau/)
 
 ## [Documentation](http://fgribreau.github.com/bootstrap-tour/docs/bootstrap-tour.js.html)
 
